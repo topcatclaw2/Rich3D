@@ -1,3 +1,4 @@
+import {readAuto,validGame} from './storage.js';
 export const COLORS = ['#61ac78','#62a6da','#e7b942','#de809a'];
 export const GROUPS = ['#e997aa','#9ecb91','#e6af66','#e5c963','#ae99d0','#79b6d4','#72bfb1','#b5a38b'];
 const names = ['起點','中山路','南京東路','機會','敦化南路','民生東路','所得稅','松江路','探訪監獄','永康街','師大路','機會','大安路','青田街','城市基金','溫州街','免費停車','天母西路','士林夜市','機會','大直街','內湖路','城市基金','南港路','前往監獄','忠孝東路','信義路','機會','仁愛路','和平東路','奢侈稅','松仁路'];
@@ -42,6 +43,7 @@ function land(s,eventIndex){
 }
 export function reducer(state,a){
  if(a.type==='NEW')return freshGame();
+ if(a.type==='LOAD')return validGame(a.game)?structuredClone(a.game):state;
  const s=structuredClone(state),p=s.players[s.turn];
  switch(a.type){
   case 'ROLL':if(s.stage!=='ready'||p.bankrupt)return state;if(p.jail){p.jail--;s.stage='end';note(s,`${p.name}在監獄休息一回合，下回合恢復行動。`);break;}s.dice=a.dice;s.remaining=a.dice[0]+a.dice[1];s.event=null;s.stage='moving';s.eventIndex=a.eventIndex;note(s,`${p.name}擲出 ${a.dice[0]} + ${a.dice[1]}，前進 ${s.remaining} 格。`,'dice');break;
@@ -55,4 +57,4 @@ export function reducer(state,a){
  }
  return s;
 }
-export function loadGame(){try{const s=JSON.parse(localStorage.getItem('city-tycoon-v1'));if(s?.version===1&&s.players?.length===4&&s.lots&&['ready','decision','end','finished'].includes(s.stage))return s;}catch{}return freshGame();}
+export function loadGame(){try{return readAuto()||freshGame();}catch{return freshGame();}}

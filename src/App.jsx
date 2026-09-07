@@ -1,6 +1,8 @@
 import React,{useReducer,useState,useEffect,useRef} from 'react';
 import {Building2,BookOpen,PlusCircle,RotateCcw,Rotate3D,ZoomIn,ZoomOut,Scan,Volume2,VolumeX,ArrowUpRight,ArrowRight,ChevronRight,X,Flag,Home,Wallet,MapPin,Trophy,Dices,Check,Landmark,TreePine} from 'lucide-react';
 import Board from './Board.jsx';
+import SaveManager from './SaveManager.jsx';
+import {saveAuto,listSaves} from './storage.js';
 import {reducer,loadGame,TILES,COLORS,money,ownLots,worth,rent,canBuild,fullGroup} from './game.js';
 
 function Dice({value,rolling}){const dots={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};return <div className={'die '+(rolling?'rolling':'')} aria-label={`${value} 點`}>{Array.from({length:9},(_,i)=><i key={i} className={dots[value].includes(i+1)?'pip':''}/>)}</div>;}
@@ -11,9 +13,10 @@ export default function App(){
  const [game,dispatch]=useReducer(reducer,undefined,loadGame),[modal,setModal]=useState(null),[selected,setSelected]=useState(null),[tab,setTab]=useState('players'),[sound,setSound]=useState(false),[rotating,setRotating]=useState(false),[error,setError]=useState(''),[saveError,setSaveError]=useState(false);
  const board=useRef(),audio=useRef();const player=game.players[game.turn],human=game.turn===0&&!game.players[0].bankrupt;const active=human&&['ready','end'].includes(game.stage);
  const roll=()=>{dispatch({type:'ROLL',dice:[1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)],eventIndex:Math.floor(Math.random()*6)});};
- useEffect(()=>{if(game.stage!=='moving')try{localStorage.setItem('city-tycoon-v1',JSON.stringify(game));setSaveError(false);}catch{setSaveError(true);}},[game]);
- useEffect(()=>{if(game.stage==='moving'){const timer=setTimeout(()=>dispatch({type:'STEP'}),330);return()=>clearTimeout(timer);}},[game.stage,game.remaining]);
- useEffect(()=>{if(human||game.stage==='finished'||modal==='new'||modal==='rules')return;const timer=setTimeout(()=>{if(game.stage==='ready')roll();else if(game.stage==='decision')dispatch({type:player.cash>TILES[player.pos].price+1800?'BUY':'SKIP'});else if(game.stage==='end'){const t=ownLots(game,game.turn).find(t=>canBuild(game,t.id)&&player.cash>Math.round(t.price*.6)+2500);if(t)dispatch({type:'BUILD',id:t.id});else dispatch({type:'NEXT'});}},game.stage==='decision'?1300:1100);return()=>clearTimeout(timer);},[game,human,modal]);
+ useEffect(()=>{try{listSaves();}catch{setSaveError(true);}},[]);
+ useEffect(()=>{if(game.stage!=='moving')try{saveAuto(game);setSaveError(false);}catch{setSaveError(true);}},[game]);
+ useEffect(()=>{if(game.stage==='moving'&&modal!=='saves'){const timer=setTimeout(()=>dispatch({type:'STEP'}),330);return()=>clearTimeout(timer);}},[game,modal]);
+ useEffect(()=>{if(human||game.stage==='finished'||modal==='new'||modal==='rules'||modal==='saves')return;const timer=setTimeout(()=>{if(game.stage==='ready')roll();else if(game.stage==='decision')dispatch({type:player.cash>TILES[player.pos].price+1800?'BUY':'SKIP'});else if(game.stage==='end'){const t=ownLots(game,game.turn).find(t=>canBuild(game,t.id)&&player.cash>Math.round(t.price*.6)+2500);if(t)dispatch({type:'BUILD',id:t.id});else dispatch({type:'NEXT'});}},game.stage==='decision'?1300:1100);return()=>clearTimeout(timer);},[game,human,modal]);
  useEffect(()=>{if(!sound||!audio.current)return;try{const ctx=audio.current,o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.setValueAtTime(game.stage==='moving'?380:620,ctx.currentTime);g.gain.setValueAtTime(.035,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.13);o.start();o.stop(ctx.currentTime+.15);}catch{}},[game.remaining,game.stage,sound]);
  const toggleSound=()=>{if(!sound){const A=window.AudioContext||window.webkitAudioContext;if(A){audio.current ||= new A();audio.current.resume();}}setSound(!sound);};
  const inspect=id=>{setSelected(id);setModal('property');};
@@ -21,6 +24,8 @@ export default function App(){
  const t=selected!==null?TILES[selected]:null,l=t?game.lots[t.id]:null;const landed=TILES[player.pos];
  return <div className="app-shell">
   <header className="header"><a className="brand" href="./" aria-label="城市大亨首頁"><span className="brand-icon"><Building2 size={33} strokeWidth={1.8}/></span><span><strong>城市大亨</strong><small>CITY TYCOON</small></span></a><p className="tagline">玩一場，擁有一座城。</p><nav><button className="text-button" aria-label="遊戲規則" onClick={()=>setModal('rules')}><BookOpen size={18}/><span>遊戲規則</span></button><span className="nav-divider"/><button className="outline-button" onClick={()=>setModal('new')}><PlusCircle size={18}/><span>新遊戲</span></button></nav></header>
+  <button className="save-launch secondary" onClick={()=>setModal('saves')}>儲存／讀取</button>
+  {modal==='saves'&&<Modal title="存檔管理" wide onClose={()=>setModal(null)}><SaveManager game={game} onLoad={saved=>{dispatch({type:'LOAD',game:saved});try{saveAuto(saved);setSaveError(false);}catch{setSaveError(true);}setSelected(null);setTab('players');setModal(null);}}/></Modal>}
   <main className="game-layout"><section className="world" aria-label="遊戲棋盤">
    <Board game={game} onSelect={inspect} onError={setError} ref={board}/>
    <div className="world-heading"><span className="live-dot"/>經典城市 <span className="world-heading-divider">/</span><span>4 人對局</span></div>
@@ -47,4 +52,3 @@ export default function App(){
   {(modal==='result'||game.stage==='finished'&&modal===null)&&<Modal title="這座城市，有了新的大亨" onClose={()=>setModal('closedResult')}><div className="winner"><Trophy size={42}/><h3>{game.players[game.winner]?.name}獲勝！</h3><p>城市的每一步，成就你的不凡眼光。</p></div><div className="rankings">{[...game.players].sort((a,b)=>worth(game,b.id)-worth(game,a.id)).map((p,i)=><div key={p.id}><b>{i+1}</b><Avatar id={p.id} small/><strong>{p.name}</strong><span>{p.bankrupt?'已破產':money(worth(game,p.id))}</span></div>)}</div><p className="property-help">總資產＝現金＋地產原價＋房屋建造成本</p><button className="primary" onClick={startNew}>再玩一場 <ArrowRight size={18}/></button></Modal>}
  </div>;
 }
-

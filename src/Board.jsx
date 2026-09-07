@@ -9,6 +9,11 @@ const Board=forwardRef(function Board({game,onSelect,onError},ref){
  const host=useRef(),engine=useRef(),current=useRef(game),select=useRef(onSelect);current.current=game;select.current=onSelect;
  useImperativeHandle(ref,()=>({reset(){engine.current?.reset();},zoom(factor){const e=engine.current;if(e){e.camera.position.sub(e.controls.target).multiplyScalar(factor).clampLength(13,80).add(e.controls.target);e.controls.update();}},rotate(){if(engine.current)engine.current.controls.autoRotate=!engine.current.controls.autoRotate;},top(){const e=engine.current;if(e){e.camera.position.set(0,29,.01);e.controls.update();}}}),[]);
  useEffect(()=>{
+  let disposed=false,cleanup=()=>{};
+  const setup=async()=>{
+  try{await Promise.race([document.fonts?.ready||Promise.resolve(),new Promise(resolve=>setTimeout(resolve,2000))]);}catch{}
+  if(disposed)return;
+  const cjkFont='"Noto Sans TC", "Microsoft JhengHei", sans-serif';
   const el=host.current;let renderer;
   try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});}catch{onError?.('瀏覽器無法啟用 WebGL，請開啟硬體加速後重新整理。');return;}
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;el.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','3D 城市棋盤，拖曳旋轉，滾輪縮放，點擊地產查看詳情');
@@ -24,11 +29,11 @@ const Board=forwardRef(function Board({game,onSelect,onError},ref){
   cyl(scene,14.3,14.5,.22,'#d2dfc8',0,-.51,0,100);cyl(scene,13.8,13.8,.035,'#dce7d4',0,-.38,0,100);
   box(scene,18.55,.65,18.55,'#405d50',0,-.03,0,.2);box(scene,18.35,.13,18.35,'#f8f4e9',0,.35,0,.1);box(scene,14.05,.08,14.05,'#b8d0a2',0,.46,0,.1);
   const textures=[];
-  function labelTexture(draw,w=512,h=512){const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');draw(ctx,w,h);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();textures.push(tex);return tex;}
+  function labelTexture(draw,w=512,h=512){const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');draw(ctx,w,h);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();textures.push(tex);return tex;}
   const icons={start:'➜',chance:'?',fund:'✦',tax:'$',jail:'▥',gojail:'▥',park:'P'};
   const tiles=[];const lotGroups=[];
   for(const t of TILES){const [x,z]=tilePosition(t.id);const g=new THREE.Group();g.position.set(x,.44,z);scene.add(g);const b=box(g,1.94,.14,1.94,'#fffaf0',0,0,0,.035);b.userData.tile=t.id;tiles.push(b);
-   const tex=labelTexture((ctx,w,h)=>{ctx.fillStyle='#fcf9f0';ctx.fillRect(0,0,w,h);if(t.type==='property'){ctx.fillStyle=t.color;ctx.fillRect(0,0,w,82);}ctx.fillStyle='#294237';ctx.textAlign='center';ctx.font='bold 76px "Microsoft JhengHei", sans-serif';ctx.fillText(t.name,w/2,t.type==='property'?180:140);if(t.type==='property'){ctx.font='60px Arial';ctx.fillText(money(t.price),w/2,290);ctx.fillStyle='#8c998e';ctx.font='26px sans-serif';ctx.fillText('CITY PROPERTY',w/2,410);}else{ctx.font='bold 135px Arial';ctx.fillStyle=t.type==='chance'?'#ba9270':'#648473';ctx.fillText(icons[t.type],w/2,320);ctx.fillStyle='#728375';ctx.font='30px "Microsoft JhengHei"';ctx.fillText(t.type==='start'?'+ $2,000':t.type==='tax'?'城市稅收':t.type==='park'?'歇一會兒':t.type==='chance'?'好運降臨':t.type==='fund'?'城市生活':'JUST VISITING',w/2,420);}});
+   const tex=labelTexture((ctx,w,h)=>{ctx.fillStyle='#fcf9f0';ctx.fillRect(0,0,w,h);if(t.type==='property'){ctx.fillStyle=t.color;ctx.fillRect(0,0,w,82);}ctx.fillStyle='#294237';ctx.textAlign='center';ctx.font=`bold 76px ${cjkFont}`;ctx.fillText(t.name,w/2,t.type==='property'?180:140);if(t.type==='property'){ctx.font='60px Arial';ctx.fillText(money(t.price),w/2,290);ctx.fillStyle='#8c998e';ctx.font='26px sans-serif';ctx.fillText('CITY PROPERTY',w/2,410);}else{ctx.font='bold 135px Arial';ctx.fillStyle=t.type==='chance'?'#ba9270':'#648473';ctx.fillText(icons[t.type],w/2,320);ctx.fillStyle='#728375';ctx.font=`30px ${cjkFont}`;ctx.fillText(t.type==='start'?'+ $2,000':t.type==='tax'?'城市稅收':t.type==='park'?'歇一會兒':t.type==='chance'?'好運降臨':t.type==='fund'?'城市生活':'JUST VISITING',w/2,420);}});
    const face=new THREE.Mesh(new THREE.PlaneGeometry(1.89,1.89),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));face.rotation.x=-Math.PI/2;face.rotation.z=t.id<8?0:t.id<16?Math.PI/2:t.id<24?Math.PI:-Math.PI/2;face.position.y=.076;g.add(face);
    const props=new THREE.Group();props.position.set(x,.58,z);scene.add(props);lotGroups[t.id]=props;
   }
@@ -46,7 +51,7 @@ const Board=forwardRef(function Board({game,onSelect,onError},ref){
   for(const [x,z] of [[-6.4,-6.3],[-3.6,-6.1],[3.2,-5.8],[6.2,-3.8],[-6.3,1.8],[-5.4,2],[-3.3,-1.9],[3.4,-1.9],[-3.3,1.9],[3.3,1.9],[-.5,5.2],[.4,6.2],[6.1,2.2],[-3.5,6.3],[3.8,6.2],[-6.3,6.4]])tree(x,z,1.05);
   for(let i=0;i<24;i++){const a=i*Math.PI*2/24;if(i%3!==0)tree(Math.cos(a)*12.5,Math.sin(a)*12.5,.85+(i%3)*.12);}
   box(scene,7.1,.055,4.3,'#dce0b9',0,.545,0,.3);
-  const centerTex=labelTexture((c,w,h)=>{c.clearRect(0,0,w,h);c.textAlign='center';c.fillStyle='#3d6850';c.font='900 152px Arial';c.fillText('CITY',w/2,148);c.fillText('TYCOON',w/2,265);c.font='25px "Microsoft JhengHei"';c.fillStyle='#6d8468';c.fillText('每一步，都是新可能。',w/2,338);},1024,420);
+  const centerTex=labelTexture((c,w,h)=>{c.clearRect(0,0,w,h);c.textAlign='center';c.fillStyle='#3d6850';c.font='900 152px Arial';c.fillText('CITY',w/2,148);c.fillText('TYCOON',w/2,265);c.font=`25px ${cjkFont}`;c.fillStyle='#6d8468';c.fillText('每一步，都是新可能。',w/2,338);},1024,420);
   const center=new THREE.Mesh(new THREE.PlaneGeometry(6.2,2.54),new THREE.MeshStandardMaterial({map:centerTex,transparent:true,depthWrite:false}));center.rotation.x=-Math.PI/2;center.position.set(0,.58,0);scene.add(center);
   cyl(scene,.75,.82,.12,'#ede7cf',0,.59,4.3);cyl(scene,.62,.62,.05,'#91c8ce',0,.675,4.3);cyl(scene,.18,.28,.5,'#dfebdf',0,.95,4.3);ball(scene,'#9fcfd2',0,1.3,4.3,.14);cyl(scene,.36,.26,.08,'#e8eedc',0,1.16,4.3);
   const pawns=[];
@@ -62,11 +67,13 @@ const Board=forwardRef(function Board({game,onSelect,onError},ref){
    const lots=JSON.stringify(s.lots);if(lastLots!==lots){lastLots=lots;for(const t of TILES){const g=lotGroups[t.id];while(g.children.length)g.remove(g.children[0]);const l=s.lots[t.id];if(l){box(g,1.75,.055,.13,COLORS[l.owner],0,0,.84,.015);for(let n=0;n<l.level;n++){const x=(n-1)*.47;box(g,.33,.32,.34,COLORS[l.owner],x,.2,-.45,.02);const roof=new THREE.Mesh(new THREE.ConeGeometry(.3,.19,4),mat('#faf0d7'));roof.position.set(x,.45,-.45);roof.rotation.y=Math.PI/4;g.add(roof);}}}}
    controls.update();renderer.render(scene,camera);
   }animate();
-  return()=>{cancelAnimationFrame(frame);ro.disconnect();el.removeEventListener('pointerdown',down);el.removeEventListener('pointerup',up);controls.dispose();const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material);});geometries.forEach(g=>g.dispose());boxGeo.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();el.removeChild(renderer.domElement);engine.current=null;};
+  cleanup=()=>{cancelAnimationFrame(frame);ro.disconnect();el.removeEventListener('pointerdown',down);el.removeEventListener('pointerup',up);controls.dispose();const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material);});geometries.forEach(g=>g.dispose());boxGeo.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();if(renderer.domElement.parentNode===el)el.removeChild(renderer.domElement);engine.current=null;};
+  };
+  setup();
+  return()=>{disposed=true;cleanup();};
  },[]);
  return <div className="board-canvas" ref={host}/>;
 });
 export default Board;
-
 
 
