@@ -9,12 +9,14 @@ export const TILES = names.map((name,id)=>{
 });
 export const money = n => '$' + n.toLocaleString('en-US');
 export const buildCost=t=>Math.round(t.price*.6);
+export const DEFAULT_MAX_ROUNDS=40;
+const normalizeMaxRounds=value=>value===null?null:Number.isInteger(Number(value))&&Number(value)>=1?Number(value):DEFAULT_MAX_ROUNDS;
 const initialBank={houses:32,hotels:12};
 const inventoryFromLots=s=>{let houses=0,hotels=0;for(const l of Object.values(s.lots||{})){if(l.level===5)hotels++;else houses+=Math.max(0,Math.min(4,l.level||0));}return {houses:Math.max(0,initialBank.houses-houses),hotels:Math.max(0,initialBank.hotels-hotels)};};
 export const availableBuildings=s=>s.bank&&Number.isInteger(s.bank.houses)&&Number.isInteger(s.bank.hotels)?s.bank:inventoryFromLots(s);
-const normalizeGame=s=>({...s,players:s.players.map((p,i)=>({...p,color:p.color||COLORS[i],human:p.human===undefined?i===0:!!p.human})),bank:{...availableBuildings(s)},buildAvailable:s.buildAvailable===true,buildUsed:s.buildUsed===true});
+const normalizeGame=s=>({...s,maxRounds:normalizeMaxRounds(s.maxRounds),players:s.players.map((p,i)=>({...p,color:p.color||COLORS[i],human:p.human===undefined?i===0:!!p.human})),bank:{...availableBuildings(s)},buildAvailable:s.buildAvailable===true,buildUsed:s.buildUsed===true});
 const defaultPlayers=[['你',COLORS[0],true],['艾米',COLORS[1],false],['小傑',COLORS[2],false],['喵喵',COLORS[3],false]];
-export function freshGame(config={}){const count=Math.min(4,Math.max(2,Number(config.count)||4));const players=defaultPlayers.slice(0,count).map(([name,color,human],id)=>{const custom=config.players?.[id]||{};return {id,name:typeof custom.name==='string'&&custom.name.trim()?custom.name.trim():name,color:custom.color||color,human:custom.human===undefined?human:!!custom.human,cash:15000,pos:0,jail:0,bankrupt:false};});return {version:1,players,lots:{},bank:{...initialBank},turn:0,round:1,stage:'ready',dice:[1,1],remaining:0,selected:null,buildAvailable:false,buildUsed:false,event:null,winner:null,log:[{text:`歡迎來到城市大亨！${count} 位玩家各獲得 $15,000。`,kind:'welcome'}],notice:'擲出骰子，開始你的城市冒險。'};}
+export function freshGame(config={}){const count=Math.min(4,Math.max(2,Number(config.count)||4));const players=defaultPlayers.slice(0,count).map(([name,color,human],id)=>{const custom=config.players?.[id]||{};return {id,name:typeof custom.name==='string'&&custom.name.trim()?custom.name.trim():name,color:custom.color||color,human:custom.human===undefined?human:!!custom.human,cash:15000,pos:0,jail:0,bankrupt:false};});return {version:1,players,lots:{},bank:{...initialBank},turn:0,round:1,maxRounds:normalizeMaxRounds(config.maxRounds),stage:'ready',dice:[1,1],remaining:0,selected:null,buildAvailable:false,buildUsed:false,event:null,winner:null,log:[{text:`歡迎來到城市大亨！${count} 位玩家各獲得 $15,000。`,kind:'welcome'}],notice:'擲出骰子，開始你的城市冒險。'};}
 const note=(s,text,kind='info')=>{s.notice=text;s.log.unshift({text,kind});s.log=s.log.slice(0,40);};
 export const ownLots=(s,p)=>TILES.filter(t=>s.lots[t.id]?.owner===p);
 export const fullGroup=(s,t,p)=>TILES.filter(x=>x.type==='property'&&x.group===t.group).every(x=>s.lots[x.id]?.owner===p);
@@ -59,7 +61,7 @@ export function reducer(state,a){
   case 'SKIP':if(s.stage!=='decision')return state;s.stage='end';note(s,`${p.name}暫不購買${TILES[p.pos].name}。`);break;
   case 'BUILD':{if(!canBuild(s,a.id))return state;const t=TILES[a.id],l=s.lots[a.id],cost=buildCost(t);s.bank=s.bank||availableBuildings(s);p.cash-=cost;if(l.level<4){s.bank.houses--;l.level++;note(s,`${p.name}在${t.name}加蓋第 ${l.level} 間房屋，支付 ${money(cost)}。`,'build');}else{s.bank.houses+=4;s.bank.hotels--;l.level=5;note(s,`${p.name}將${t.name}的 4 間房屋升級為旅館，支付 ${money(cost)}。`,'build');}s.buildAvailable=false;s.buildUsed=true;break;}
   case 'SELL':{if(!['ready','end'].includes(s.stage)||s.lots[a.id]?.owner!==p.id)return state;const t=TILES[a.id],l=s.lots[a.id];const value=Math.floor((t.price+l.level*Math.round(t.price*.6))*.5);releaseBuildings(s,l);p.cash+=value;delete s.lots[a.id];s.buildAvailable=false;note(s,`${p.name}變賣${t.name}，回收 ${money(value)}。`,'sell');break;}
-  case 'NEXT':if(s.stage!=='end')return state;{let next=s.turn;do{next=(next+1)%s.players.length;if(next===0)s.round++;}while(s.players[next].bankrupt);s.turn=next;s.event=null;s.stage='ready';s.selected=null;s.buildAvailable=false;s.buildUsed=false;if(s.round>40){s.winner=s.players.filter(x=>!x.bankrupt).sort((a,b)=>worth(s,b.id)-worth(s,a.id))[0].id;s.stage='finished';note(s,`40 回合結束！${s.players[s.winner].name}以最高總資產獲勝。`);}else note(s,`輪到${s.players[next].name}，準備擲骰子。`);break;}
+  case 'NEXT':if(s.stage!=='end')return state;{let next=s.turn;do{next=(next+1)%s.players.length;if(next===0)s.round++;}while(s.players[next].bankrupt);s.turn=next;s.event=null;s.stage='ready';s.selected=null;s.buildAvailable=false;s.buildUsed=false;if(s.maxRounds!==null&&s.round>s.maxRounds){s.winner=s.players.filter(x=>!x.bankrupt).sort((a,b)=>worth(s,b.id)-worth(s,a.id))[0].id;s.stage='finished';note(s,`${s.maxRounds} 回合結束！${s.players[s.winner].name}以最高總資產獲勝。`);}else note(s,`輪到${s.players[next].name}，準備擲骰子。`);break;}
   default:return state;
  }
  return s;
