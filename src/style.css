@@ -14,10 +14,18 @@
 .activity-toggle{pointer-events:auto;display:flex;align-items:center;gap:7px;margin-left:8px;padding:8px 11px;border:1px solid #ffffffbd;border-radius:10px;background:#f8fcf3c9;font-size:12px;box-shadow:0 3px 12px #294c3410}
 .activity-toggle[aria-expanded=true]{background:#e0eddfdf;border-color:#b9cebb}
 .activity-toggle:hover{background:#fff}.activity-toggle span{font-size:10px;color:#607760}
-.glass-activity{position:absolute;z-index:1;top:72px;bottom:100px;left:27px;width:clamp(280px,23vw,320px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffffffce;border-radius:20px;background:linear-gradient(145deg,#fcfff6b8,#e6f0e17d);backdrop-filter:blur(18px) saturate(115%);-webkit-backdrop-filter:blur(18px) saturate(115%);box-shadow:0 12px 36px #2845361a,inset 0 1px 0 #ffffffd9;color:#284536}
+.glass-activity{--glass-opacity:.72;position:absolute;z-index:1;top:72px;bottom:100px;left:27px;width:clamp(280px,23vw,320px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffffffce;border-radius:20px;background:linear-gradient(145deg,rgb(252 255 246 / calc(var(--glass-opacity) * .92)),rgb(230 240 225 / calc(var(--glass-opacity) * .60)));backdrop-filter:blur(18px) saturate(115%);-webkit-backdrop-filter:blur(18px) saturate(115%);box-shadow:0 12px 36px #2845361a,inset 0 1px 0 #ffffffd9;color:#284536}
 .glass-activity[hidden]{display:none}
 .glass-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px 14px;border-bottom:1px solid #ffffff80}
-.glass-activity-heading h2{margin:0;font-size:22px;letter-spacing:1px}
+.glass-activity-heading h2{margin:0;font-size:22px;letter-spacing:1px;white-space:nowrap}
+.glass-opacity-control{display:flex;align-items:center;gap:7px;flex:1;min-width:74px;max-width:142px;margin-left:auto;color:#637b61}
+.glass-opacity-control>span,.glass-opacity-control output{font-size:10px;white-space:nowrap}
+.glass-opacity-range{width:72px;height:22px;margin:0;accent-color:#3e6c46;cursor:pointer}
+.glass-opacity-range:focus-visible{outline:2px solid #668e69;outline-offset:2px}
+.glass-opacity-range::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:#c4d2c1b8}
+.glass-opacity-range::-webkit-slider-thumb{width:15px;height:15px;margin-top:-5px;border:2px solid #f7fbf4; border-radius:50%;background:#3e6c46;box-shadow:0 1px 4px #28453644;-webkit-appearance:none}
+.glass-opacity-range::-moz-range-track{height:5px;border-radius:99px;background:#c4d2c1b8}
+.glass-opacity-range::-moz-range-thumb{width:11px;height:11px;border:2px solid #f7fbf4;border-radius:50%;background:#3e6c46;box-shadow:0 1px 4px #28453644}
 .glass-activity-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:4px 18px;scrollbar-width:thin;scrollbar-color:#9caf9a transparent}
 .glass-activity-list:focus-visible{outline:2px solid #668e69;outline-offset:-3px}
 .glass-activity .activity-item{gap:12px;margin:0;padding:17px 0;border-bottom:1px solid #ffffff7a;align-items:flex-start}
@@ -29,5 +37,5 @@
 .glass-activity-all:hover{background:#f8fcf4ad}
 @supports not (backdrop-filter:blur(1px)){.glass-activity{background:#edf3e8f2}}
 @media(max-width:1150px){.glass-activity{left:20px}.activity-toggle{margin-left:2px}}
-@media(max-width:760px){.world-heading{top:12px;left:16px;right:58px;flex-wrap:wrap;gap:7px}.activity-toggle{padding:7px 8px;font-size:11px}.activity-toggle span{display:none}.glass-activity{top:65px;left:14px;bottom:72px;width:min(280px,calc(100% - 28px))}.glass-activity-heading{padding:12px 16px}.glass-activity-list{padding:0 16px}.glass-activity .activity-item{padding:12px 0}}
+@media(max-width:760px){.world-heading{top:12px;left:16px;right:58px;flex-wrap:wrap;gap:7px}.activity-toggle{padding:7px 8px;font-size:11px}.activity-toggle span{display:none}.glass-activity{top:65px;left:14px;bottom:72px;width:min(280px,calc(100% - 28px))}.glass-activity-heading{padding:12px 16px}.glass-activity-list{padding:0 16px}.glass-activity .activity-item{padding:12px 0}.glass-opacity-control{gap:3px;min-width:0;max-width:112px}.glass-opacity-control>span{display:none}.glass-opacity-range{width:76px}.glass-opacity-control output{font-size:9px}}
 @media(min-width:761px) and (max-width:900px){.world-heading{right:58px;flex-wrap:wrap}.glass-activity{top:102px}}

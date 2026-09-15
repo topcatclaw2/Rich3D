@@ -27,11 +27,17 @@ function Modal({title,onClose,children,wide=false}){const dialog=useRef();useEff
 const rules=[['擲骰與移動','你與 3 位電腦輪流擲兩顆骰子，3D 棋子按點數前進。通過起點領取 $2,000；雙骰相同不追加回合。'],['購地與租金','停在無主地產可按標價購買，也可跳過。停在對手地產即支付租金；同色地產收齊後，空地租金加倍。'],['房屋與旅館','只要走到自己的土地，就能在該次落地決定是否建造；不需要集齊同色地產，每次落地最多建造 1 次。每次建造費為地價的 60%；最多 4 間房屋，已有 4 間房屋時再次走到該地可升級為旅館。租金倍率依序為 3、6、10、15，旅館為 22。'],['城市中的驚喜','機會與城市基金帶來獎勵或支出。所得稅 $1,200，奢侈稅 $1,800。前往監獄會移到探訪監獄格並暫停下一回合；免費停車不收費。'],['資金與勝利','現金不足付款時，系統由低價地產開始，以地價和升級成本合計的 50% 自動變賣；仍不足就破產。最後存活者獲勝；若設定回合上限，達到上限後以現金＋地產原價＋升級成本最高者獲勝。'],['你的遊戲，自動保留','每個穩定回合自動儲存在這個瀏覽器。重新整理可繼續；新遊戲會清除原進度。本作採自訂快速規則，未加入拍賣、抵押或玩家間交易。']];
 function parseRoundLimit(setup){if(setup.roundOption==='unlimited')return null;if(setup.roundOption==='custom'){const value=Number(setup.customRounds);return Number.isInteger(value)&&value>=1?value:null;}return Number(setup.roundOption);}
 const ACTIVITY_VISIBLE_KEY='city-tycoon:activity-visible:v1';
+const GLASS_OPACITY_KEY='city-tycoon:glass-opacity:v1';
+const DEFAULT_GLASS_OPACITY=72;
+const clampGlassOpacity=value=>Math.min(95,Math.max(20,Number(value)));
+function readGlassOpacity(){try{const raw=localStorage.getItem(GLASS_OPACITY_KEY);if(raw===null)return DEFAULT_GLASS_OPACITY;const value=Number(raw);return Number.isFinite(value)?clampGlassOpacity(value):DEFAULT_GLASS_OPACITY;}catch{return DEFAULT_GLASS_OPACITY;}}
 function ActivityItems({entries}){return entries.map((e,i)=><div className="activity-item" key={i}><span className={'event-icon '+e.kind}>{e.kind==='buy'?<Home size={16}/>:e.kind==='dice'?<Dices size={16}/>:e.kind==='tax'?<Landmark size={16}/>:<ArrowUpRight size={16}/>}</span><p>{e.text}<small>{i===0?'剛剛':'本局紀錄'}</small></p></div>);}
 export default function App(){
  const [activityVisible,setActivityVisible]=useState(()=>{try{return localStorage.getItem(ACTIVITY_VISIBLE_KEY)!=='false';}catch{return true;}});
+ const [glassOpacity,setGlassOpacity]=useState(readGlassOpacity);
  const activityToggle=useRef();
  useEffect(()=>{try{localStorage.setItem(ACTIVITY_VISIBLE_KEY,String(activityVisible));}catch{/* The panel still works when browser storage is unavailable. */}},[activityVisible]);
+ const saveGlassOpacity=e=>{const value=clampGlassOpacity(Number(e.currentTarget.value));setGlassOpacity(value);try{localStorage.setItem(GLASS_OPACITY_KEY,String(value));}catch{/* The visual setting still works when browser storage is unavailable. */}};
  const [game,dispatch]=useReducer(reducer,undefined,loadGame),[modal,setModal]=useState(null),[selected,setSelected]=useState(null),[tab,setTab]=useState('players'),[sound,setSound]=useState(false),[rotating,setRotating]=useState(false),[error,setError]=useState(''),[saveError,setSaveError]=useState(false),[setup,setSetup]=useState({count:4,roundOption:'40',customRounds:'100',players:[{name:'你',color:COLORS[0],human:true},{name:'艾米',color:COLORS[1],human:false},{name:'小傑',color:COLORS[2],human:false},{name:'喵喵',color:COLORS[3],human:false}]});
  const board=useRef(),audio=useRef();const player=game.players[game.turn],human=!!player?.human&&!player?.bankrupt;const active=human&&['ready','end'].includes(game.stage);
  const roll=()=>{dispatch({type:'ROLL',dice:[1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)],eventIndex:Math.floor(Math.random()*6)});};
@@ -64,8 +70,8 @@ export default function App(){
   <main className="game-layout"><section className="world" aria-label="遊戲棋盤">
    <Board game={game} onSelect={inspect} onError={setError} ref={board}/>
    <div className="world-heading"><span className="live-dot"/>經典城市 <span className="world-heading-divider">/</span><span>{game.players.length} 人對局</span><button ref={activityToggle} className="activity-toggle" aria-expanded={activityVisible} aria-controls="glass-city-activity" onClick={()=>setActivityVisible(v=>!v)}><BookOpen size={16}/>城市動態<span>{activityVisible?'收起':'展開'}</span></button></div>
-   <section id="glass-city-activity" className="glass-activity" aria-labelledby="glass-activity-title" hidden={!activityVisible}>
-    <div className="glass-activity-heading"><h2 id="glass-activity-title">城市動態</h2><button className="icon-button" aria-label="關閉左側城市動態" onClick={()=>{setActivityVisible(false);activityToggle.current?.focus();}}><X size={20}/></button></div>
+   <section id="glass-city-activity" className="glass-activity" style={{'--glass-opacity':glassOpacity/100}} aria-labelledby="glass-activity-title" hidden={!activityVisible}>
+    <div className="glass-activity-heading"><h2 id="glass-activity-title">城市動態</h2><label className="glass-opacity-control"><span>透明度</span><input className="glass-opacity-range" type="range" min="20" max="95" step="1" value={glassOpacity} aria-label="玻璃面板透明度" onChange={e=>setGlassOpacity(Number(e.target.value))} onPointerUp={saveGlassOpacity} onBlur={saveGlassOpacity}/><output>{glassOpacity}%</output></label><button className="icon-button" aria-label="關閉左側城市動態" onClick={()=>{setActivityVisible(false);activityToggle.current?.focus();}}><X size={20}/></button></div>
     <div className="glass-activity-list" tabIndex={0} role="region" aria-label="城市動態紀錄"><ActivityItems entries={game.log}/></div>
     <button className="glass-activity-all" onClick={()=>setModal('log')}>全部紀錄 <ArrowUpRight size={16}/></button>
    </section>
