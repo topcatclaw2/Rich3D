@@ -29,7 +29,7 @@ function parseRoundLimit(setup){if(setup.roundOption==='unlimited')return null;i
 const ACTIVITY_VISIBLE_KEY='city-tycoon:activity-visible:v1';
 const GLASS_OPACITY_KEY='city-tycoon:glass-opacity:v1';
 const DEFAULT_GLASS_OPACITY=72;
-const clampGlassOpacity=value=>Math.min(95,Math.max(20,Number(value)));
+const clampGlassOpacity=value=>Math.min(95,Math.max(5,Number(value)));
 function readGlassOpacity(){try{const raw=localStorage.getItem(GLASS_OPACITY_KEY);if(raw===null)return DEFAULT_GLASS_OPACITY;const value=Number(raw);return Number.isFinite(value)?clampGlassOpacity(value):DEFAULT_GLASS_OPACITY;}catch{return DEFAULT_GLASS_OPACITY;}}
 function ActivityItems({entries}){return entries.map((e,i)=><div className="activity-item" key={i}><span className={'event-icon '+e.kind}>{e.kind==='buy'?<Home size={16}/>:e.kind==='dice'?<Dices size={16}/>:e.kind==='tax'?<Landmark size={16}/>:<ArrowUpRight size={16}/>}</span><p>{e.text}<small>{i===0?'剛剛':'本局紀錄'}</small></p></div>);}
 export default function App(){
@@ -71,7 +71,7 @@ export default function App(){
    <Board game={game} onSelect={inspect} onError={setError} ref={board}/>
    <div className="world-heading"><span className="live-dot"/>經典城市 <span className="world-heading-divider">/</span><span>{game.players.length} 人對局</span><button ref={activityToggle} className="activity-toggle" aria-expanded={activityVisible} aria-controls="glass-city-activity" onClick={()=>setActivityVisible(v=>!v)}><BookOpen size={16}/>城市動態<span>{activityVisible?'收起':'展開'}</span></button></div>
    <section id="glass-city-activity" className="glass-activity" style={{'--glass-opacity':glassOpacity/100}} aria-labelledby="glass-activity-title" hidden={!activityVisible}>
-    <div className="glass-activity-heading"><h2 id="glass-activity-title">城市動態</h2><label className="glass-opacity-control"><span>透明度</span><input className="glass-opacity-range" type="range" min="20" max="95" step="1" value={glassOpacity} aria-label="玻璃面板透明度" onChange={e=>setGlassOpacity(Number(e.target.value))} onPointerUp={saveGlassOpacity} onBlur={saveGlassOpacity}/><output>{glassOpacity}%</output></label><button className="icon-button" aria-label="關閉左側城市動態" onClick={()=>{setActivityVisible(false);activityToggle.current?.focus();}}><X size={20}/></button></div>
+    <div className="glass-activity-heading"><h2 id="glass-activity-title">城市動態</h2><label className="glass-opacity-control"><span>透明度</span><input className="glass-opacity-range" type="range" min="5" max="95" step="1" value={glassOpacity} aria-label="玻璃面板透明度" onChange={e=>setGlassOpacity(Number(e.target.value))} onPointerUp={saveGlassOpacity} onBlur={saveGlassOpacity}/><output>{glassOpacity}%</output></label><button className="icon-button" aria-label="關閉左側城市動態" onClick={()=>{setActivityVisible(false);activityToggle.current?.focus();}}><X size={20}/></button></div>
     <div className="glass-activity-list" tabIndex={0} role="region" aria-label="城市動態紀錄"><ActivityItems entries={game.log}/></div>
     <button className="glass-activity-all" onClick={()=>setModal('log')}>全部紀錄 <ArrowUpRight size={16}/></button>
    </section>
