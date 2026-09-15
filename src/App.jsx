@@ -2,6 +2,7 @@ import React,{useReducer,useState,useEffect,useRef} from 'react';
 import {Building2,BookOpen,PlusCircle,RotateCcw,Rotate3D,ZoomIn,ZoomOut,Scan,Volume2,VolumeX,ArrowUpRight,ArrowRight,ChevronRight,X,Flag,Home,Wallet,MapPin,Trophy,Dices,Check,Landmark,TreePine} from 'lucide-react';
 import Board from './Board.jsx';
 import SaveManager from './SaveManager.jsx';
+import BackgroundMusic from './BackgroundMusic.jsx';
 import {saveAuto,listSaves} from './storage.js';
 import {reducer,loadGame,TILES,COLORS,money,ownLots,worth,rent,canBuild,buildCost,availableBuildings} from './game.js';
 
@@ -75,7 +76,7 @@ export default function App(){
     <div className="glass-activity-list" tabIndex={0} role="region" aria-label="城市動態紀錄"><ActivityItems entries={game.log}/></div>
     <button className="glass-activity-all" onClick={()=>setModal('log')}>全部紀錄 <ArrowUpRight size={16}/></button>
    </section>
-   <div className="world-top-right"><span className="saved"><Check size={13}/>{saveError?'此瀏覽器無法存檔':'自動儲存'}</span><button className="icon-button sound" aria-label={sound?'關閉音效':'開啟音效'} onClick={toggleSound}>{sound?<Volume2 size={18}/>:<VolumeX size={18}/>}</button></div>
+   <div className="world-top-right"><span className="saved"><Check size={13}/>{saveError?'此瀏覽器無法存檔':'自動儲存'}</span><BackgroundMusic/><button className="icon-button sound" aria-label={sound?'關閉音效':'開啟音效'} onClick={toggleSound}>{sound?<Volume2 size={18}/>:<VolumeX size={18}/>}</button></div>
    {error&&<div className="webgl-error">{error}</div>}
    <div className="board-foot"><div className="camera-toolbar"><button title="自動旋轉視角" aria-label="自動旋轉視角" className={rotating?'selected':''} onClick={()=>{board.current?.rotate();setRotating(!rotating);}}><Rotate3D size={20}/><span>旋轉視角</span></button><button title="重置視角" aria-label="重置視角" onClick={()=>{board.current?.reset();setRotating(false);}}><RotateCcw size={18}/></button><button title="俯視棋盤" aria-label="俯視棋盤" onClick={()=>board.current?.top()}><Scan size={18}/></button><i/><button title="縮小" aria-label="縮小" onClick={()=>board.current?.zoom(1.15)}><ZoomOut size={20}/></button><button title="放大" aria-label="放大" onClick={()=>board.current?.zoom(.87)}><ZoomIn size={20}/></button></div><span className="gesture-hint">拖曳旋轉 · 滾輪縮放 · 點選地產</span></div>
   </section>
