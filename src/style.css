@@ -9,3 +9,25 @@
 @media(min-width:761px) and (max-height:820px){.header{height:73px}.game-layout{height:calc(100dvh - 73px)}.sidebar{padding:16px 20px 12px}.round-heading{margin-bottom:15px}.round-caption{display:none}.round-heading h1{margin:0}.round-heading h1 b{font-size:23px}.round-icon{width:33px;height:33px}.tabs{margin-bottom:8px}.tabs button{padding-bottom:9px}.overview{height:223px}.player-row{height:51px;margin-bottom:4px;padding:5px 8px}.turn-panel{padding:14px 0 10px}.dice-row{padding:14px 0 18px}.die{width:48px;height:48px;padding:10px;gap:3px}.activity{padding-top:14px}.activity-heading{margin-bottom:10px}.activity-item{margin-bottom:10px}.sidebar-footer{display:none}}
 .setup-count{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;margin:12px 0}.setup-count select,.player-setup-row input,.player-setup-row select{border:1px solid #d8e0d0;border-radius:7px;background:#fff;padding:7px 9px;font:inherit;font-size:12px}.round-limit-custom{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;margin:-3px 0 12px}.round-limit-custom input{width:110px;border:1px solid #d8e0d0;border-radius:7px;background:#fff;padding:7px 9px;font:inherit;font-size:12px}.player-setup{display:grid;gap:8px;margin:12px 0 18px}.player-setup-row{display:grid;grid-template-columns:1fr 42px 82px;gap:7px;align-items:center}.player-setup-row input[type=color]{padding:3px;width:42px;height:34px}.player-setup-row input[type=text]{min-width:0}
 .owner-number{position:absolute;right:0;bottom:0;display:grid;place-items:center;min-width:15px;height:15px;padding:0 2px;box-sizing:border-box;border:1px solid var(--player);border-radius:50%;background:#fffaf0;color:#294237;font:bold 10px Arial;line-height:1}
+/* Floating city activity shares the same log as the sidebar. */
+.world-heading{z-index:2;min-height:34px;top:20px}
+.activity-toggle{pointer-events:auto;display:flex;align-items:center;gap:7px;margin-left:8px;padding:8px 11px;border:1px solid #ffffffbd;border-radius:10px;background:#f8fcf3c9;font-size:12px;box-shadow:0 3px 12px #294c3410}
+.activity-toggle[aria-expanded=true]{background:#e0eddfdf;border-color:#b9cebb}
+.activity-toggle:hover{background:#fff}.activity-toggle span{font-size:10px;color:#607760}
+.glass-activity{position:absolute;z-index:1;top:72px;bottom:100px;left:27px;width:clamp(280px,23vw,320px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffffffce;border-radius:20px;background:linear-gradient(145deg,#fcfff6b8,#e6f0e17d);backdrop-filter:blur(18px) saturate(115%);-webkit-backdrop-filter:blur(18px) saturate(115%);box-shadow:0 12px 36px #2845361a,inset 0 1px 0 #ffffffd9;color:#284536}
+.glass-activity[hidden]{display:none}
+.glass-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px 14px;border-bottom:1px solid #ffffff80}
+.glass-activity-heading h2{margin:0;font-size:22px;letter-spacing:1px}
+.glass-activity-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:4px 18px;scrollbar-width:thin;scrollbar-color:#9caf9a transparent}
+.glass-activity-list:focus-visible{outline:2px solid #668e69;outline-offset:-3px}
+.glass-activity .activity-item{gap:12px;margin:0;padding:17px 0;border-bottom:1px solid #ffffff7a;align-items:flex-start}
+.glass-activity .activity-item:last-child{border-bottom:0}
+.glass-activity .event-icon{width:30px;height:30px;background:#f4faedb8;flex-shrink:0;margin-top:3px}
+.glass-activity .activity-item p{margin:0;font-size:18px;line-height:1.75;color:#304f3a;overflow-wrap:anywhere}
+.glass-activity .activity-item small{display:block;margin-top:6px;font-size:13px;color:#637b61}
+.glass-activity-all{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding:13px 20px;border-top:1px solid #ffffff80;background:#f8fcf44d;font-size:13px;font-weight:600}
+.glass-activity-all:hover{background:#f8fcf4ad}
+@supports not (backdrop-filter:blur(1px)){.glass-activity{background:#edf3e8f2}}
+@media(max-width:1150px){.glass-activity{left:20px}.activity-toggle{margin-left:2px}}
+@media(max-width:760px){.world-heading{top:12px;left:16px;right:58px;flex-wrap:wrap;gap:7px}.activity-toggle{padding:7px 8px;font-size:11px}.activity-toggle span{display:none}.glass-activity{top:65px;left:14px;bottom:72px;width:min(280px,calc(100% - 28px))}.glass-activity-heading{padding:12px 16px}.glass-activity-list{padding:0 16px}.glass-activity .activity-item{padding:12px 0}}
+@media(min-width:761px) and (max-width:900px){.world-heading{right:58px;flex-wrap:wrap}.glass-activity{top:102px}}
