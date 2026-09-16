@@ -48,3 +48,64 @@
 .inflation-status{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:7px;color:#607264}.inflation-status span{display:inline-flex;align-items:center;gap:5px;border-radius:99px;white-space:nowrap}.inflation-rate-badge{border:1px solid #82aa76;background:#e6f1df;padding:5px 10px;color:#345d38;font-size:11px;font-weight:650;box-shadow:0 1px 2px #315b3514}.inflation-rate-badge b{color:#244f2a;font-size:13px;font-variant-numeric:tabular-nums}.inflation-index{padding:4px 7px;border:1px solid #e5e9e0;background:#f7f8f4;color:#879187;font-size:9px}.inflation-index b{color:#677466;font-weight:650;font-variant-numeric:tabular-nums}
 
 .dice-count-picker{display:flex;gap:6px;margin-top:14px}.dice-count-picker button{flex:1;min-height:36px;border:1px solid var(--line);border-radius:7px;font-size:11px;color:#687a60}.dice-count-picker button[aria-pressed="true"]{background:#e4edd9;border-color:#7b9568;color:#354b3a;font-weight:700}.dice-count-picker button:disabled{opacity:.55;cursor:default}
+/* Emotion messages are DOM overlays projected from each 3D pawn. */
+.board-canvas canvas{position:absolute;inset:0;z-index:0}
+.emotion-layer{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none}
+.emotion-bubble{position:absolute;left:0;top:0;width:max-content;max-width:min(270px,42vw);min-width:205px;color:#294237;pointer-events:none}
+.emotion-card{position:relative;border:2px solid color-mix(in srgb,var(--player) 78%,#fff);border-radius:15px;background:linear-gradient(145deg,#fffef9,#f8faf2);padding:10px 13px 11px;box-shadow:0 8px 24px #243e2d2c,inset 0 1px 0 #ffffff;transform-origin:var(--tail-x,50%) 100%}
+.emotion-card::after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-8px;width:13px;height:13px;background:#f8faf2;border-right:2px solid color-mix(in srgb,var(--player) 78%,#fff);border-bottom:2px solid color-mix(in srgb,var(--player) 78%,#fff);transform:translateX(-50%) rotate(45deg)}
+.emotion-bubble-heading{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.emotion-player-dot{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:var(--player);box-shadow:0 0 0 3px color-mix(in srgb,var(--player) 15%,transparent)}
+.emotion-bubble-heading strong{max-width:76px;overflow:hidden;text-overflow:ellipsis;font-size:13px;font-weight:750}
+.emotion-mood-icon{font-size:17px;line-height:1}
+.emotion-mood-label{font-size:10px;color:#73806e}
+.emotion-amount{margin-left:auto;color:var(--player);font-size:13px;font-variant-numeric:tabular-nums}
+.emotion-card p{margin:7px 0 0;font-size:13px;font-weight:600;line-height:1.45;overflow-wrap:anywhere}
+.emotion-bubble:not(.motion-off) .emotion-card{animation:emotion-lifetime 2.4s ease both}
+.emotion-bubble.is-paused .emotion-card,.emotion-bubble.is-paused .emotion-mood-icon{animation-play-state:paused}
+.emotion-happy:not(.motion-off) .emotion-mood-icon{animation:emotion-bounce .48s ease-in-out 2 alternate}
+.emotion-sad:not(.motion-off) .emotion-mood-icon{animation:emotion-droop .8s ease-out 1}
+.emotion-surprised:not(.motion-off) .emotion-mood-icon{animation:emotion-surprise .45s ease-out 1}
+.emotion-proud:not(.motion-off) .emotion-mood-icon{animation:emotion-proud .7s ease-in-out 2 alternate}
+.emotion-anxious:not(.motion-off) .emotion-card{animation-name:emotion-lifetime,emotion-shake;animation-duration:2.4s,.42s;animation-timing-function:ease,ease-in-out;animation-iteration-count:1,2}
+.emotion-relieved:not(.motion-off) .emotion-card{animation-name:emotion-lifetime,emotion-soften;animation-duration:2.4s,.9s;animation-timing-function:ease,ease-out;animation-iteration-count:1,1}
+.emotion-bankrupt:not(.motion-off) .emotion-mood-icon{animation:emotion-surprise .45s ease-out 1}
+@keyframes emotion-lifetime{0%{opacity:0;transform:translateY(10px) scale(.94)}10.416%{opacity:1;transform:translateY(0) scale(1)}77.083%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-12px) scale(.98)}}
+@keyframes emotion-bounce{to{transform:translateY(-4px) scale(1.12)}}
+@keyframes emotion-droop{to{transform:translateY(2px) rotate(-7deg)}}
+@keyframes emotion-surprise{0%{transform:scale(.65)}72%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes emotion-proud{to{transform:rotate(9deg) translateY(-2px)}}
+@keyframes emotion-shake{25%{translate:-3px 0}75%{translate:3px 0}}
+@keyframes emotion-soften{from{filter:saturate(1.5);background:#e9eee4}to{filter:saturate(1);background:#fffef9}}
+.emotion-bubble.motion-off .emotion-card{opacity:1;animation:none}
+.emotion-mobile-feed{display:none}
+.emotion-mobile-entry{position:relative;left:auto!important;top:auto!important;width:auto;max-width:none;min-width:0;flex:1}
+.emotion-mobile-entry .emotion-card{padding:9px 11px}
+.emotion-mobile-entry .emotion-card::after{display:none}
+.emotion-mobile-entry .emotion-bubble-heading strong{max-width:62px}
+.emotion-mobile-entry .emotion-card p{font-size:12px}
+.emotion-animation-toggle{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid #d8e0d1;border-radius:99px;background:#f8fcf3e6;color:#526e56;font-size:10px;font-weight:650;white-space:nowrap}
+.emotion-animation-toggle:hover{background:#fff}
+.emotion-toggle-indicator{width:9px;height:9px;border-radius:50%;background:#a7b19f;box-shadow:0 0 0 3px #84987b1a}
+.emotion-animation-toggle[aria-pressed=true] .emotion-toggle-indicator{background:#3e804d;box-shadow:0 0 0 3px #3e804d22}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:760px){.emotion-layer{display:none}.emotion-mobile-feed{display:flex;align-items:stretch;gap:9px;padding:0 14px 12px;background:#eaf0e5}.emotion-animation-toggle{padding:6px 7px;font-size:9px;gap:5px}.emotion-bubble-heading{gap:4px}}
+@media(prefers-reduced-motion:reduce){.emotion-bubble .emotion-card,.emotion-bubble .emotion-mood-icon{animation:none!important;transition:none!important;opacity:1!important;filter:none!important}}
+.emotion-card::before{position:absolute;z-index:1;right:8px;top:-13px;font-size:14px;line-height:1;filter:drop-shadow(0 1px 1px #fff);}
+.emotion-happy .emotion-card::before{content:"✦";color:#e3b745;animation:emotion-sparkle .7s ease-in-out 2 alternate}
+.emotion-sad .emotion-card::before{content:"💧";font-size:11px;animation:emotion-droop .8s ease-out 1}
+.emotion-surprised .emotion-card::before{content:"!";color:#e68b68;font-size:18px;font-weight:800;animation:emotion-surprise .45s ease-out 1}
+.emotion-proud .emotion-card::before{content:"✦";color:#d3aa4f;animation:emotion-sparkle .7s ease-in-out 2 alternate}
+.emotion-anxious .emotion-card::before{content:"💦";font-size:12px;animation:emotion-droop .8s ease-out 1}
+.emotion-relieved .emotion-card::before{content:"☁";color:#92aa96;font-size:17px;animation:emotion-soften .9s ease-out 1}
+@keyframes emotion-sparkle{to{transform:scale(1.35) rotate(15deg);opacity:.65}}
+.emotion-happy .emotion-card::before{content:"🪙";font-size:12px}
+.emotion-sad:not(.motion-off) .emotion-card{animation-name:emotion-sad-lifetime}
+.emotion-anxious .emotion-amount{animation:emotion-amount-glow .48s ease-in-out 3 alternate}
+@keyframes emotion-sad-lifetime{0%{opacity:0;transform:translateY(-8px) scale(.94)}10.416%{opacity:1;transform:translateY(0) scale(1)}77.083%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(12px) scale(.98)}}
+@keyframes emotion-amount-glow{to{text-shadow:0 0 8px #dc8b6f;filter:brightness(1.22)}}
+.emotion-bubble.motion-off .emotion-card::before,.emotion-bubble.motion-off .emotion-amount{animation:none!important}
+@media(prefers-reduced-motion:reduce){.emotion-card::before,.emotion-amount{animation:none!important}}
+.emotion-gesture{font-size:13px;line-height:1;animation:emotion-sparkle .7s ease-in-out 2 alternate}
+.emotion-bubble.motion-off .emotion-gesture{animation:none}
+@media(prefers-reduced-motion:reduce){.emotion-gesture{animation:none!important}}

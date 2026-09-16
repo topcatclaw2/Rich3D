@@ -3,6 +3,7 @@ import {Building2,BookOpen,PlusCircle,RotateCcw,Rotate3D,ZoomIn,ZoomOut,Scan,Vol
 import Board from './Board.jsx';
 import SaveManager from './SaveManager.jsx';
 import BackgroundMusic from './BackgroundMusic.jsx';
+import {EmotionMessageLayer,EmotionMessageMobileFeed} from './EmotionMessages.jsx';
 import {saveAuto,listSaves} from './storage.js';
 import {reducer,loadGame,TILES,COLORS,money,ownLots,worth,rent,canBuild,buildCost,availableBuildings,DEFAULT_INFLATION_RATE,MAX_INITIAL_INFLATION_RATE,inflationAmount,propertyPrice} from './game.js';
 
@@ -37,17 +38,41 @@ rules.splice(0,rules.length,
 function parseRoundLimit(setup){if(setup.roundOption==='unlimited')return null;if(setup.roundOption==='custom'){const value=Number(setup.customRounds);return Number.isInteger(value)&&value>=1?value:null;}return Number(setup.roundOption);}
 const ACTIVITY_VISIBLE_KEY='city-tycoon:activity-visible:v1';
 const GLASS_OPACITY_KEY='city-tycoon:glass-opacity:v1';
+const EMOTION_ANIMATION_KEY='city-tycoon:emotion-animation:v1';
 const DEFAULT_GLASS_OPACITY=72;
 const clampGlassOpacity=value=>Math.min(95,Math.max(5,Number(value)));
 function readGlassOpacity(){try{const raw=localStorage.getItem(GLASS_OPACITY_KEY);if(raw===null)return DEFAULT_GLASS_OPACITY;const value=Number(raw);return Number.isFinite(value)?clampGlassOpacity(value):DEFAULT_GLASS_OPACITY;}catch{return DEFAULT_GLASS_OPACITY;}}
+function readEmotionAnimation(){try{return localStorage.getItem(EMOTION_ANIMATION_KEY)!=='false';}catch{return true;}}
 function ActivityItems({entries}){return entries.map((e,i)=><div className="activity-item" key={i}><span className={'event-icon '+e.kind}>{e.kind==='buy'?<Home size={16}/>:e.kind==='dice'?<Dices size={16}/>:e.kind==='tax'?<Landmark size={16}/>:<ArrowUpRight size={16}/>}</span><p>{e.text}<small>{i===0?'剛剛':'本局紀錄'}</small></p></div>);}
 export default function App(){
  const [activityVisible,setActivityVisible]=useState(()=>{try{return localStorage.getItem(ACTIVITY_VISIBLE_KEY)!=='false';}catch{return true;}});
  const [glassOpacity,setGlassOpacity]=useState(readGlassOpacity);
+ const [emotionAnimation,setEmotionAnimation]=useState(readEmotionAnimation);
+ const [reducedMotion,setReducedMotion]=useState(()=>typeof window!=='undefined'&&window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
+ const [emotionQueue,setEmotionQueue]=useState([]);
+ const [modal,setModal]=useState(null);
+ const [game,dispatch]=useReducer(reducer,undefined,loadGame);
+ const emotionAnchorRefs=useRef(new Map()),processedEmotionSequence=useRef(0);
+ const activeEmotion=emotionQueue[0]||null;
+ const emotionMoods=activeEmotion&&emotionAnimation&&!reducedMotion?Object.fromEntries(activeEmotion.players.map(item=>[item.playerId,item.mood])):{};
  const activityToggle=useRef();
  useEffect(()=>{try{localStorage.setItem(ACTIVITY_VISIBLE_KEY,String(activityVisible));}catch{/* The panel still works when browser storage is unavailable. */}},[activityVisible]);
+ useEffect(()=>{try{localStorage.setItem(EMOTION_ANIMATION_KEY,String(emotionAnimation));}catch{/* The setting still works for this session. */}},[emotionAnimation]);
+ useEffect(()=>{const query=window.matchMedia?.('(prefers-reduced-motion: reduce)');if(!query)return;const update=event=>setReducedMotion(event.matches);query.addEventListener?.('change',update);return()=>query.removeEventListener?.('change',update);},[]);
+ useEffect(()=>{
+  const fresh=(game.emotionEvents||[]).filter(event=>event.id>processedEmotionSequence.current);
+  if(!fresh.length)return;
+  processedEmotionSequence.current=Math.max(processedEmotionSequence.current,...fresh.map(event=>event.id));
+  setEmotionQueue(current=>[...current,...fresh].sort((a,b)=>b.priority-a.priority||a.id-b.id).slice(0,3));
+ },[game.emotionEvents]);
+ useEffect(()=>{
+  if(!activeEmotion||modal||(game.stage==='moving'&&activeEmotion.priority<90))return;
+  const id=activeEmotion.id;
+  const timer=setTimeout(()=>setEmotionQueue(current=>current[0]?.id===id?current.slice(1):current.filter(event=>event.id!==id)),2400);
+  return()=>clearTimeout(timer);
+ },[activeEmotion?.id,game.stage,modal]);
  const saveGlassOpacity=e=>{const value=clampGlassOpacity(Number(e.currentTarget.value));setGlassOpacity(value);try{localStorage.setItem(GLASS_OPACITY_KEY,String(value));}catch{/* The visual setting still works when browser storage is unavailable. */}};
- const [game,dispatch]=useReducer(reducer,undefined,loadGame),[modal,setModal]=useState(null),[selected,setSelected]=useState(null),[tab,setTab]=useState('players'),[sound,setSound]=useState(false),[rotating,setRotating]=useState(false),[error,setError]=useState(''),[saveError,setSaveError]=useState(false),[setup,setSetup]=useState({count:4,roundOption:'40',customRounds:'100',inflationRate:DEFAULT_INFLATION_RATE,players:[{name:'你',color:COLORS[0],human:true},{name:'艾米',color:COLORS[1],human:false},{name:'小傑',color:COLORS[2],human:false},{name:'喵喵',color:COLORS[3],human:false}]});
+ const [selected,setSelected]=useState(null),[tab,setTab]=useState('players'),[sound,setSound]=useState(false),[rotating,setRotating]=useState(false),[error,setError]=useState(''),[saveError,setSaveError]=useState(false),[setup,setSetup]=useState({count:4,roundOption:'40',customRounds:'100',inflationRate:DEFAULT_INFLATION_RATE,players:[{name:'你',color:COLORS[0],human:true},{name:'艾米',color:COLORS[1],human:false},{name:'小傑',color:COLORS[2],human:false},{name:'喵喵',color:COLORS[3],human:false}]});
  const board=useRef(),audio=useRef();const player=game.players[game.turn],human=!!player?.human&&!player?.bankrupt;const active=human&&['ready','end'].includes(game.stage);
  const roll=()=>{dispatch({type:'ROLL',dice:Array.from({length:player.diceCount??2},()=>1+Math.floor(Math.random()*6)),eventIndex:Math.floor(Math.random()*8)});};
  useEffect(()=>{try{listSaves();}catch{setSaveError(true);}},[]);
@@ -69,25 +94,28 @@ export default function App(){
  const toggleSound=()=>{if(!sound){const A=window.AudioContext||window.webkitAudioContext;if(A){audio.current ||= new A();audio.current.resume();}}setSound(!sound);};
  const inspect=id=>{setSelected(id);setModal('property');};
  const newGameMaxRounds=parseRoundLimit(setup);
- const startNew=()=>{if(setup.roundOption==='custom'&&!newGameMaxRounds)return;dispatch({type:'NEW',config:{...setup,maxRounds:newGameMaxRounds,inflationRate:Number(setup.inflationRate)}});setModal(null);setTab('players');board.current?.reset();setRotating(false);};
+ const startNew=()=>{if(setup.roundOption==='custom'&&!newGameMaxRounds)return;setEmotionQueue([]);processedEmotionSequence.current=0;dispatch({type:'NEW',config:{...setup,maxRounds:newGameMaxRounds,inflationRate:Number(setup.inflationRate)}});setModal(null);setTab('players');board.current?.reset();setRotating(false);};
  const t=selected!==null?TILES[selected]:null,l=t?game.lots[t.id]:null;const landed=TILES[player.pos];
  const purchaseAvailable=!!t&&t.type==='property'&&!l&&game.stage==='decision'&&human&&landed.id===t.id;
  return <div className="app-shell">
   <header className="header"><a className="brand" href="./" aria-label="城市大亨首頁"><span className="brand-icon"><Building2 size={33} strokeWidth={1.8}/></span><span><strong>城市大亨</strong><small>CITY TYCOON</small></span></a><p className="tagline">玩一場，擁有一座城。</p><nav><button className="text-button" aria-label="遊戲規則" onClick={()=>setModal('rules')}><BookOpen size={18}/><span>遊戲規則</span></button><span className="nav-divider"/><button className="outline-button" onClick={()=>setModal('new')}><PlusCircle size={18}/><span>新遊戲</span></button></nav></header>
   <button className="save-launch secondary" onClick={()=>setModal('saves')}>儲存／讀取</button>
-  {modal==='saves'&&<Modal title="存檔管理" wide onClose={()=>setModal(null)}><SaveManager game={game} onLoad={saved=>{dispatch({type:'LOAD',game:saved});try{saveAuto(saved);setSaveError(false);}catch{setSaveError(true);}setSelected(null);setTab('players');setModal(null);}}/></Modal>}
+  {modal==='saves'&&<Modal title="存檔管理" wide onClose={()=>setModal(null)}><SaveManager game={game} onLoad={saved=>{setEmotionQueue([]);processedEmotionSequence.current=0;dispatch({type:'LOAD',game:saved});try{saveAuto(saved);setSaveError(false);}catch{setSaveError(true);}setSelected(null);setTab('players');setModal(null);}}/></Modal>}
   <main className="game-layout"><section className="world" aria-label="遊戲棋盤">
-   <Board game={game} onSelect={inspect} onError={setError} ref={board}/>
+   <Board game={game} emotionAnchorRefs={emotionAnchorRefs} emotionMoods={emotionMoods} onSelect={inspect} onError={setError} ref={board}>
+    <EmotionMessageLayer event={activeEmotion} players={game.players} anchorRefs={emotionAnchorRefs} animated={emotionAnimation&&!reducedMotion} paused={game.stage==='moving'||modal!==null}/>
+   </Board>
    <div className="world-heading"><span className="live-dot"/>經典城市 <span className="world-heading-divider">/</span><span>{game.players.length} 人對局</span><button ref={activityToggle} className="activity-toggle" aria-expanded={activityVisible} aria-controls="glass-city-activity" onClick={()=>setActivityVisible(v=>!v)}><BookOpen size={16}/>城市動態<span>{activityVisible?'收起':'展開'}</span></button></div>
    <section id="glass-city-activity" className="glass-activity" style={{'--glass-alpha':1-glassOpacity/100}} aria-labelledby="glass-activity-title" hidden={!activityVisible}>
     <div className="glass-activity-heading"><h2 id="glass-activity-title">城市動態</h2><label className="glass-opacity-control"><span>透明度</span><input className="glass-opacity-range" type="range" min="5" max="95" step="1" value={glassOpacity} aria-label="玻璃面板透明度" onChange={e=>setGlassOpacity(Number(e.target.value))} onPointerUp={saveGlassOpacity} onBlur={saveGlassOpacity}/><output>{glassOpacity}%</output></label><button className="icon-button" aria-label="關閉左側城市動態" onClick={()=>{setActivityVisible(false);activityToggle.current?.focus();}}><X size={20}/></button></div>
     <div className="glass-activity-list" tabIndex={0} role="region" aria-label="城市動態紀錄"><ActivityItems entries={game.log}/></div>
     <button className="glass-activity-all" onClick={()=>setModal('log')}>全部紀錄 <ArrowUpRight size={16}/></button>
    </section>
-   <div className="world-top-right"><span className="saved"><Check size={13}/>{saveError?'此瀏覽器無法存檔':'自動儲存'}</span><BackgroundMusic/><button className="icon-button sound" aria-label={sound?'關閉音效':'開啟音效'} onClick={toggleSound}>{sound?<Volume2 size={18}/>:<VolumeX size={18}/>}</button></div>
+   <div className="world-top-right"><span className="saved"><Check size={13}/>{saveError?'此瀏覽器無法存檔':'自動儲存'}</span><BackgroundMusic/><button className="emotion-animation-toggle" type="button" aria-pressed={emotionAnimation} onClick={()=>setEmotionAnimation(value=>!value)}><span className="emotion-toggle-indicator"/>{emotionAnimation?'情緒動畫 開':'情緒動畫 關'}</button><button className="icon-button sound" aria-label={sound?'關閉音效':'開啟音效'} onClick={toggleSound}>{sound?<Volume2 size={18}/>:<VolumeX size={18}/>}</button></div>
    {error&&<div className="webgl-error">{error}</div>}
    <div className="board-foot"><div className="camera-toolbar"><button title="自動旋轉視角" aria-label="自動旋轉視角" className={rotating?'selected':''} onClick={()=>{board.current?.rotate();setRotating(!rotating);}}><Rotate3D size={20}/><span>旋轉視角</span></button><button title="重置視角" aria-label="重置視角" onClick={()=>{board.current?.reset();setRotating(false);}}><RotateCcw size={18}/></button><button title="俯視棋盤" aria-label="俯視棋盤" onClick={()=>board.current?.top()}><Scan size={18}/></button><i/><button title="縮小" aria-label="縮小" onClick={()=>board.current?.zoom(1.15)}><ZoomOut size={20}/></button><button title="放大" aria-label="放大" onClick={()=>board.current?.zoom(.87)}><ZoomIn size={20}/></button></div><span className="gesture-hint">拖曳旋轉 · 滾輪縮放 · 點選地產</span></div>
   </section>
+   <EmotionMessageMobileFeed event={activeEmotion} players={game.players} animated={emotionAnimation&&!reducedMotion} paused={game.stage==='moving'||modal!==null}/>
    <aside className="sidebar"><div className="round-heading"><div><span className="round-caption">城市的每一步，由你決定</span><h1>回合 <b>{String(game.round).padStart(2,'0')}</b><span>/ {game.maxRounds===null?'∞':game.maxRounds}</span></h1><div className="inflation-status" role="group" aria-label={`目前通膨率 ${game.inflationRate}%，物價指數 ${game.priceIndex.toFixed(2)} 倍`}><span className="inflation-rate-badge"><TrendingUp size={14} aria-hidden="true"/>通膨率 <b>{game.inflationRate}%</b></span><span className="inflation-index">物價指數 <b>{game.priceIndex.toFixed(2)}×</b></span></div></div><span className="round-icon"><Flag size={21}/></span></div>
    <div className="tabs"><button className={tab==='players'?'active':''} onClick={()=>setTab('players')}>玩家概況</button><button className={tab==='properties'?'active':''} onClick={()=>setTab('properties')}>我的地產 <span>{ownLots(game,0).length}</span></button></div>
    <div className="overview">{tab==='players'?game.players.map(p=><div key={p.id} className={'player-row '+(game.turn===p.id?'current ':'')+(p.bankrupt?'bankrupt':'')} style={{'--player':playerColor(p)}}><Avatar id={p.id} player={p}/><div className="player-info"><strong>{p.name}{p.id===0?<em>玩家</em>:<span className="ai">電腦</span>}</strong><small>{p.bankrupt?'已破產':`${ownLots(game,p.id).length} 塊地產${p.jail?' · 監獄中':''}`}</small></div><div className="player-cash"><b>{money(p.cash)}</b>{game.turn===p.id&&<small><span/> 目前回合</small>}</div></div>):<div className="property-list">{ownLots(game,0).length?ownLots(game,0).map(t=><button key={t.id} onClick={()=>inspect(t.id)}><i style={{background:t.color}}/><span><strong>{t.name}</strong><small>{buildingLabel(game.lots[t.id].level)} · 租金 {money(rent(game,t))}</small></span><ChevronRight size={16}/></button>):<div className="empty-properties"><Home size={28}/><strong>你的第一塊地產，正在等你</strong><p>擲骰探索城市，停在無主街區即可購買。</p></div>}</div>}</div>
