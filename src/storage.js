@@ -1,6 +1,7 @@
 export const AUTO_KEY='city-tycoon-v1', MANUAL_KEY='city-tycoon-manual-v1';
 export const TTL=30*24*60*60*1000;
 const validSkillHand=hand=>hand===undefined||Array.isArray(hand)&&hand.length<=13&&hand.every(id=>typeof id==='string');
+const validPendingSkill=(pending,count)=>pending===undefined||pending===null||pending&&Number.isInteger(pending.sourceId)&&pending.sourceId>=0&&pending.sourceId<count&&Number.isInteger(pending.targetId)&&pending.targetId>=0&&pending.targetId<count&&typeof pending.cardId==='string'&&(pending.targetPosition===null||pending.targetPosition===undefined||Number.isInteger(pending.targetPosition));
 const validPlayer=(p,i,count)=>p&&p.id===i&&typeof p.name==='string'&&Number.isFinite(p.cash)&&p.cash>=0&&Number.isInteger(p.pos)&&p.pos>=0&&p.pos<32&&[0,1].includes(p.jail)&&typeof p.bankrupt==='boolean'&&(p.diceCount===undefined||[1,2].includes(p.diceCount))&&validSkillHand(p.skillHand)&&(p.skillUsedThisTurn===undefined||typeof p.skillUsedThisTurn==='boolean')&&(p.slowTurns===undefined||Number.isInteger(p.slowTurns)&&p.slowTurns>=0)&&(p.rentShield===undefined||p.rentShield===0||p.rentShield===1)&&(p.rentMultiplier===undefined||p.rentMultiplier===1||p.rentMultiplier===2);
 const validLots=(lots,playerCount)=>lots&&typeof lots==='object'&&!Array.isArray(lots)&&Object.entries(lots).every(([id,l])=>Number.isInteger(+id)&&+id>0&&+id<32&&![3,6,8,11,14,16,19,22,24,27,30].includes(+id)&&l&&Number.isInteger(l.owner)&&l.owner>=0&&l.owner<playerCount&&Number.isInteger(l.level)&&l.level>=0&&l.level<=5);
 export function validGame(s){
@@ -16,6 +17,7 @@ export function validGame(s){
  if(!(s.event===null||s.event&&typeof s.event.title==='string'&&(s.event.amount===undefined||Number.isFinite(s.event.amount))))return false;
  if(!(s.skillDeck===undefined||Array.isArray(s.skillDeck)&&s.skillDeck.every(id=>typeof id==='string'))||!(s.skillDiscard===undefined||Array.isArray(s.skillDiscard)&&s.skillDiscard.every(id=>typeof id==='string')))return false;
  if(s.skillOverflow!==undefined&&!(s.skillOverflow===null||Number.isInteger(s.skillOverflow?.playerId)&&s.skillOverflow.playerId>=0&&s.skillOverflow.playerId<s.players.length))return false;
+ if(!validPendingSkill(s.pendingSkill,s.players.length))return false;
  if(s.stage==='finished'&&!(Number.isInteger(s.winner)&&s.winner>=0&&s.winner<s.players.length))return false;
  if(s.bank!==undefined&&!(Number.isInteger(s.bank.houses)&&s.bank.houses>=0&&Number.isInteger(s.bank.hotels)&&s.bank.hotels>=0))return false;
  return (s.buildAvailable===undefined||typeof s.buildAvailable==='boolean')&&(s.buildUsed===undefined||typeof s.buildUsed==='boolean');

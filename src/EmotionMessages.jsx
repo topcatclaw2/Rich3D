@@ -1,7 +1,7 @@
 import React from 'react';
 import {money} from './game.js';
 
-function amountLabel(amount){return `${amount>0?'+':'−'}${money(Math.abs(amount))}`;}
+function amountLabel(amount){return Number.isFinite(amount)?`${amount>0?'+':'−'}${money(Math.abs(amount))}`:'';}
 const gestures={happy:'🙌',sad:'💧',surprised:'❗',proud:'⭐',anxious:'🔥',relieved:'☁️',bankrupt:'💔'};
 
 function EmotionEntry({message,player,anchorRefs,mobile=false,animated=true,paused=false}){

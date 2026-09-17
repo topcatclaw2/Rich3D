@@ -69,6 +69,34 @@ const pools = {
     priority: 100,
     messages: ['我的城市夢，先暫停一下……', '這局真的撐不住了！', '下次我會管理好現金流！', '所有投資都化成回憶了……', '恭喜對手，我會捲土重來！'],
   },
+  skillUse: {
+    mood: 'proud',
+    label: '出牌',
+    emoji: '✨',
+    priority: 50,
+    messages: ['技能卡啟動！', '這張牌用得正是時候！', '城市局勢，照我的計畫走！', '效果準備生效！', '漂亮的一手牌！'],
+  },
+  skillTarget: {
+    mood: 'surprised',
+    label: '中招',
+    emoji: '⚡',
+    priority: 55,
+    messages: ['等等，這張牌是對我的？', '局勢突然變了！', '這招來得太快了吧！', '我的計畫被打亂了！', '需要想辦法應對！'],
+  },
+  skillCounter: {
+    mood: 'proud',
+    label: '反制',
+    emoji: '🛡️',
+    priority: 65,
+    messages: ['擋下來了！', '這張反制卡沒有浪費！', '想算計我，還早得很！', '護盾成功！', '漂亮化解危機！'],
+  },
+  skillReflect: {
+    mood: 'proud',
+    label: '反彈',
+    emoji: '↩️',
+    priority: 70,
+    messages: ['原路奉還！', '這招現在回到你身上！', '反彈成功！', '攻擊者變成自己了！', '這就是出牌時機！'],
+  },
 };
 
 export function emitEmotion(state, { category, summary, participants }) {
