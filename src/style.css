@@ -109,3 +109,33 @@
 .emotion-gesture{font-size:13px;line-height:1;animation:emotion-sparkle .7s ease-in-out 2 alternate}
 .emotion-bubble.motion-off .emotion-gesture{animation:none}
 @media(prefers-reduced-motion:reduce){.emotion-gesture{animation:none!important}}
+
+/* Skill cards stay inside the existing turn panel and keep dice as the primary action. */
+.skill-panel{margin:18px 0 16px;padding:12px 12px 11px;border:1px solid #dfe7dc;border-radius:13px;background:#f8fbf6;box-shadow:0 2px 8px #315b3510}
+.skill-panel-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;color:#607461;font-size:10px;font-weight:700;letter-spacing:.7px}
+.skill-panel-heading h3{display:flex;align-items:center;gap:6px;margin:0;color:#34563d;font-size:13px}
+.skill-heading-mark{color:#c9a649;font-size:15px}
+.skill-panel-heading>span{font-size:10px;color:#819182;font-variant-numeric:tabular-nums}
+.skill-card-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.skill-card-tile{position:relative;display:flex;align-items:center;gap:7px;min-width:0;min-height:60px;padding:9px 7px 8px;border:1px solid #dfe7dc;border-top:3px solid var(--skill-accent,#8fb29a);border-radius:9px;background:#fff;box-shadow:0 2px 5px #315b350c;text-align:left}
+.skill-card-tile:hover:not([aria-disabled="true"]){background:#fbfdf9;border-color:var(--skill-accent,#8fb29a);box-shadow:0 4px 10px #315b3518}
+.skill-card-tile.selected{border-color:var(--skill-accent,#3e804d);box-shadow:0 0 0 2px color-mix(in srgb,var(--skill-accent,#3e804d) 22%,transparent),0 4px 10px #315b3518}
+.skill-card-tile[aria-disabled="true"]{opacity:.55;background:#f2f4ef}
+.skill-card-icon{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border-radius:8px;background:color-mix(in srgb,var(--skill-accent,#8fb29a) 16%,#fff);color:var(--skill-accent,#6b9274);font-size:17px;line-height:1}
+.skill-card-copy{display:grid;gap:3px;min-width:0}
+.skill-card-copy strong{overflow:hidden;color:#35543c;font-size:11px;white-space:nowrap;text-overflow:ellipsis}
+.skill-card-copy small{display:-webkit-box;overflow:hidden;color:#7c897d;font-size:8px;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.skill-card-count{position:absolute;right:5px;top:4px;min-width:14px;padding:1px 4px;border-radius:99px;background:#edf3e8;color:#6e816d;font-size:8px;text-align:center}
+.skill-control{--skill-accent:#9a75b0}.skill-movement{--skill-accent:#6ba2cf}.skill-defense{--skill-accent:#5a9b69}.skill-money{--skill-accent:#c39b42}.skill-utility{--skill-accent:#7c9a86}
+.skill-empty,.skill-ai-count{margin:0;padding:7px 2px;color:#849184;font-size:10px;line-height:1.5}
+.skill-detail{display:grid;gap:8px;margin-top:9px;padding:10px;border:1px solid #d7c78d;border-radius:10px;background:#fffdf4}.skill-detail-heading{display:flex;align-items:flex-start;gap:8px}.skill-detail-icon{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:8px;background:#f5edcf;color:#9a7d2d;font-size:18px}.skill-detail-heading>div{display:grid;gap:3px;min-width:0}.skill-detail-heading strong{color:#635126;font-size:11px}.skill-detail-heading span{color:#786b49;font-size:9px;line-height:1.4}.skill-detail-heading small{color:#9b8b63;font-size:8px}.skill-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.skill-detail-actions .primary,.skill-detail-actions .secondary{min-height:31px;padding:6px 8px;font-size:10px}
+.skill-target-picker{display:grid;gap:8px;margin-top:9px;padding:10px;border:1px solid #b8ceb9;border-radius:10px;background:#edf5ea}
+.skill-target-picker>div:first-child{display:grid;gap:3px}.skill-target-picker strong{color:#365d3e;font-size:10px}.skill-target-picker span{color:#6b7f6b;font-size:9px}
+.skill-target-picker label,.skill-land-pickers label{display:grid;gap:4px;color:#6c7c6b;font-size:9px;font-weight:650}
+.skill-target-picker select{width:100%;padding:6px 7px;border:1px solid #d3dfd0;border-radius:7px;background:#fff;color:#38553e;font-size:10px}
+.skill-land-pickers{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.skill-target-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.skill-target-actions .primary,.skill-target-actions .secondary{min-height:31px;padding:6px 8px;font-size:10px}
+.skill-overflow{display:grid;gap:7px;margin:-4px 0 14px;padding:10px;border:1px solid #d9bd78;border-radius:11px;background:#fff9e9;color:#67552b}.skill-overflow>strong{font-size:11px;color:#765d20}.skill-overflow>span{font-size:9px;line-height:1.45;color:#8a7543}.skill-overflow-list{display:grid;gap:5px}.skill-overflow-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:5px;padding:5px 6px;border:1px solid #e5d39d;border-radius:7px;background:#fff}.skill-overflow-card-icon{font-size:14px}.skill-overflow-card>strong{min-width:0;overflow:hidden;color:#66572f;font-size:9px;text-overflow:ellipsis;white-space:nowrap}.skill-overflow-card button{padding:4px 6px;border:1px solid #e5d39d;border-radius:6px;background:#fffdf6;color:#7b642d;font-size:8px;white-space:nowrap}.skill-overflow-card button:first-of-type{border-color:#7da180;color:#446c4b}.skill-overflow-card button:disabled{opacity:.45}.skill-overflow-card button:hover:not(:disabled){background:#fffdf6;border-color:#c9a649}
+.event-note em{display:block;margin-top:3px;color:#66856b;font-size:10px;font-style:normal;font-weight:650}
+@media(max-width:1150px){.skill-card-list{gap:5px}.skill-card-tile{gap:4px;padding-left:5px;padding-right:5px}.skill-card-icon{flex-basis:21px;width:21px;height:21px;font-size:14px}.skill-card-copy strong{font-size:10px}.skill-card-copy small{font-size:7px}}
+@media(max-width:760px){.skill-panel{margin:12px 0;padding:10px}.skill-card-list{grid-template-columns:repeat(3,minmax(100px,1fr));overflow-x:auto;padding-bottom:2px}.skill-card-tile{min-height:58px}.skill-card-copy small{font-size:8px}.skill-target-picker{padding:9px}.skill-land-pickers{grid-template-columns:1fr}.skill-target-actions .primary,.skill-target-actions .secondary{min-height:34px}}
