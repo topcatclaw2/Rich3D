@@ -18,6 +18,7 @@ export function validGame(s){
  if(!(s.skillDeck===undefined||Array.isArray(s.skillDeck)&&s.skillDeck.every(id=>typeof id==='string'))||!(s.skillDiscard===undefined||Array.isArray(s.skillDiscard)&&s.skillDiscard.every(id=>typeof id==='string')))return false;
  if(s.skillOverflow!==undefined&&!(s.skillOverflow===null||Number.isInteger(s.skillOverflow?.playerId)&&s.skillOverflow.playerId>=0&&s.skillOverflow.playerId<s.players.length))return false;
  if(!validPendingSkill(s.pendingSkill,s.players.length))return false;
+ if(s.limitBuildings!==undefined&&typeof s.limitBuildings!=='boolean')return false;
  if(s.stage==='finished'&&!(Number.isInteger(s.winner)&&s.winner>=0&&s.winner<s.players.length))return false;
  if(s.bank!==undefined&&!(Number.isInteger(s.bank.houses)&&s.bank.houses>=0&&Number.isInteger(s.bank.hotels)&&s.bank.hotels>=0))return false;
  return (s.buildAvailable===undefined||typeof s.buildAvailable==='boolean')&&(s.buildUsed===undefined||typeof s.buildUsed==='boolean');
