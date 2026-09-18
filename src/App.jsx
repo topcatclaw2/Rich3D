@@ -73,7 +73,7 @@ export default function App(){
  useEffect(()=>{try{localStorage.setItem(SKILL_ANIMATION_KEY,String(skillAnimation));}catch{/* The setting still works for this session. */}},[skillAnimation]);
  useEffect(()=>{const query=window.matchMedia?.('(prefers-reduced-motion: reduce)');if(!query)return;const update=event=>setReducedMotion(event.matches);query.addEventListener?.('change',update);return()=>query.removeEventListener?.('change',update);},[]);
  useEffect(()=>{
-  const fresh=(game.emotionEvents||[]).filter(event=>event.id>processedEmotionSequence.current);
+  const fresh=(game.emotionHistory||game.emotionEvents||[]).filter(event=>event.id>processedEmotionSequence.current);
   if(!fresh.length)return;
   processedEmotionSequence.current=Math.max(processedEmotionSequence.current,...fresh.map(event=>event.id));
   setEmotionQueue(current=>[...current,...fresh].sort((a,b)=>b.priority-a.priority||a.id-b.id).slice(0,3));

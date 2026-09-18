@@ -83,6 +83,13 @@ const pools = {
     priority: 55,
     messages: ['等等，這張牌是對我的？', '局勢突然變了！', '這招來得太快了吧！', '我的計畫被打亂了！', '需要想辦法應對！'],
   },
+  skillLandSwapTarget: {
+    mood: 'surprised',
+    label: '錯愕',
+    emoji: '🏠',
+    priority: 55,
+    messages: ['等等，我的地產被換走了？！', '這筆換地交易，我怎麼沒同意！', '我的街區突然易主了！', '房契被調包了嗎？', '這張換地卡太突然了吧！'],
+  },
   skillCounter: {
     mood: 'proud',
     label: '反制',
@@ -116,6 +123,13 @@ export function emitEmotion(state, { category, summary, participants }) {
       message: participantDefinition.messages[(id + playerId) % participantDefinition.messages.length],
     };
   });
+  const event = { id, category, summary, priority: Math.max(definition.priority,...participants.map(({category:participantCategory})=>pools[participantCategory]?.priority||0)), players };
+  // emotionEvents is the action-local list used by the rules tests and activity
+  // consumers. Keep a small persistent handoff buffer as well so React cannot
+  // miss an event when the next STEP/NEXT action clears the local list first.
   state.emotionEvents ||= [];
-  state.emotionEvents.push({ id, category, summary, priority: Math.max(definition.priority,...participants.map(({category:participantCategory})=>pools[participantCategory]?.priority||0)), players });
+  state.emotionEvents.push(event);
+  state.emotionHistory ||= [];
+  state.emotionHistory.push(event);
+  if (state.emotionHistory.length > 32) state.emotionHistory = state.emotionHistory.slice(-32);
 }
