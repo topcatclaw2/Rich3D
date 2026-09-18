@@ -20,6 +20,13 @@ const pools = {
     priority: 45,
     messages: ['這塊地歸我了！', '投資城市，從今天開始！', '先買先贏！', '我的地產版圖又擴大了！', '希望它很快替我賺錢！'],
   },
+  propertyUnaffordable: {
+    mood: 'anxious',
+    label: '無奈',
+    emoji: '😣',
+    priority: 45,
+    messages: ['這塊地好喜歡，可是現金不夠……', '差一點就能買下了！', '先存錢，下次再來。', '地產很香，荷包不允許。', '只能先放棄這次機會。'],
+  },
   salary: {
     mood: 'happy',
     label: '開心',

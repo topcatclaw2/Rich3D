@@ -116,7 +116,7 @@ function land(s,eventIndex,options={}){
  const playerId=options.playerId??s.turn,flow=options.flow!==false,p=s.players[playerId],t=TILES[p.pos];if(flow){s.selected=t.id;s.stage='end';s.buildAvailable=false;s.buildUsed=false;}
  if(t.type==='property'){
   const l=s.lots[t.id];
-  if(!l){const price=propertyPrice(s,t);if(flow)s.stage=p.cash>=price?'decision':'end';note(s,flow?`${p.name}抵達${t.name}，${p.cash>=price?'可以購買這塊地產。':'現金不足以購買。'}`:`${p.name}抵達${t.name}，未進行購買。`);}
+  if(!l){const price=propertyPrice(s,t),canAfford=p.cash>=price;if(flow)s.stage=canAfford?'decision':'end';note(s,flow?`${p.name}抵達${t.name}，${canAfford?'可以購買這塊地產。':'現金不足以購買。'}`:`${p.name}抵達${t.name}，未進行購買。`);if(flow&&!canAfford)emitEmotion(s,{category:'propertyUnaffordable',summary:`${p.name}抵達${t.name}，但現金不足以購買。`,participants:[{playerId:p.id}]});}
  else if(l.owner!==p.id){let cost=rent(s,t);const owner=s.players[l.owner];if(owner.rentMultiplier===2){cost*=2;owner.rentMultiplier=1;}if(p.rentShield===1){p.rentShield=0;note(s,`${p.name}使用免租卡，免除${t.name}的 ${money(cost)} 租金。`,'skill');}else{note(s,`${p.name}在${t.name}支付 ${money(cost)} 租金給${owner.name}。`,'rent');pay(s,p.id,cost,l.owner,'rent');}}
   else {s.buildAvailable=true;const offer=l.level===5?'已有旅館。':l.level===4?(availableBuildings(s).hotels?'可以升級為旅館。':'銀行旅館已用完。'):(availableBuildings(s).houses?'可以加蓋一間房屋。':'銀行房屋已用完。');note(s,`${p.name}回到自己的${t.name}，${offer}`);}
  }else if(t.type==='tax'){const cost=inflationAmount(s,t.id===6?1200:1800);note(s,`${p.name}支付${t.name} ${money(cost)}。`,'tax');pay(s,p.id,cost,null,'tax');}
