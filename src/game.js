@@ -19,19 +19,19 @@ export const buildCost=(t,s)=>inflationAmount(s,t.price*.6);
 export const DEFAULT_MAX_ROUNDS=40;
 export const MAX_SKILL_HAND=3;
 export const SKILL_CARDS=[
- {id:'trap',name:'陷害卡',type:'control',timing:'active',icon:'⛓️',summary:'指定玩家進入監獄',target:'player'},
- {id:'slow',name:'龜速卡',type:'control',timing:'active',icon:'🐌',summary:'目標 3 回合最多走 1 格',target:'player'},
- {id:'teleport',name:'傳送卡',type:'movement',timing:'active',icon:'✦',summary:'將玩家移到合法位置',target:'player'},
- {id:'get-out',name:'出獄卡',type:'utility',timing:'active',icon:'🔓',summary:'解除自己的監獄狀態'},
- {id:'rent-shield',name:'免租卡',type:'defense',timing:'active',icon:'🛡️',summary:'下一次租金免除'},
- {id:'rent-double',name:'租金加倍卡',type:'money',timing:'active',icon:'×2',summary:'下一次收租提高為 2 倍'},
- {id:'position-swap',name:'位置交換卡',type:'movement',timing:'active',icon:'⇄',summary:'交換兩名玩家位置',target:'player'},
- {id:'birthday',name:'生日派對卡',type:'money',timing:'active',icon:'🎂',summary:'其他玩家各支付一筆錢'},
- {id:'subsidy',name:'城市補助卡',type:'money',timing:'active',icon:'🪙',summary:'從銀行獲得小額補助'},
- {id:'counter',name:'反制卡',type:'defense',timing:'reaction',icon:'✋',summary:'取消作用在自己的技能'},
- {id:'reflect',name:'反彈卡',type:'defense',timing:'reaction',icon:'↩',summary:'將單一指定技能反彈'},
- {id:'redraw',name:'幸運重抽卡',type:'utility',timing:'active',icon:'⟳',summary:'放棄手牌並重新抽卡'},
- {id:'land-swap',name:'換地卡',type:'control',timing:'active',icon:'🏠',summary:'交換兩塊地產所有權',target:'land'}
+ {id:'trap',name:'陷害卡',type:'control',timing:'active',icon:'⛓️',summary:'指定玩家進入監獄',target:'player',description:'將一名玩家送進監獄，該玩家會移到監獄位置並暫停下一回合。',usage:'在自己的回合、擲骰前選擇一名目標玩家使用。',restriction:'只能指定仍在場的其他玩家；目標若持有反制卡或反彈卡，可以在效果結算前回應。'},
+ {id:'slow',name:'龜速卡',type:'control',timing:'active',icon:'🐌',summary:'目標 3 回合最多走 1 格',target:'player',description:'使目標玩家接下來 3 個自己的回合，每回合最多前進 1 格，但仍會觸發抵達格子的效果。',usage:'在自己的回合、擲骰前選擇一名玩家使用，也可以指定自己。',restriction:'目標已有龜速效果時不能重複套用；指定其他玩家時，對方可使用反制卡或反彈卡。'},
+ {id:'teleport',name:'傳送卡',type:'movement',timing:'active',icon:'✦',summary:'將玩家移到合法位置',target:'player',description:'將一名玩家直接移動到指定的合法棋盤位置，並觸發該位置的抵達效果。',usage:'在自己的回合、擲骰前選擇目標玩家與合法位置後使用。',restriction:'不能選擇「前往監獄」格；傳送不會重複抽取技能卡，目標若持有反制卡或反彈卡，可以在效果結算前回應。'},
+ {id:'get-out',name:'出獄卡',type:'utility',timing:'active',icon:'🔓',summary:'解除自己的監獄狀態',description:'立即解除自己的監獄狀態，恢復正常行動。',usage:'自己處於監獄狀態時，在自己的回合、擲骰前使用。',restriction:'只有目前在監獄中的玩家可以使用；不能替其他玩家解除監獄。'},
+ {id:'rent-shield',name:'免租卡',type:'defense',timing:'active',icon:'🛡️',summary:'下一次租金免除',description:'讓自己下一次應支付的租金完全免除。',usage:'在自己的回合、擲骰前使用；效果會保留到下一次需要支付租金時。',restriction:'只保護下一筆租金，觸發後立即消耗；不會免除稅金、事件支出或其他付款。'},
+ {id:'rent-double',name:'租金加倍卡',type:'money',timing:'active',icon:'×2',summary:'下一次收租提高為 2 倍',description:'讓自己下一次收到的租金提高為原本的 2 倍。',usage:'在自己的回合、擲骰前使用；效果會保留到下一次成功收取租金時。',restriction:'只影響下一筆租金交易，觸發後立即消耗；加倍會在通膨與地產租金計算後套用。'},
+ {id:'position-swap',name:'位置交換卡',type:'movement',timing:'active',icon:'⇄',summary:'交換兩名玩家位置',target:'player',description:'將自己與指定玩家目前在棋盤上的位置互換。',usage:'在自己的回合、擲骰前選擇一名其他玩家使用。',restriction:'只能指定仍在場的其他玩家；交換位置不會重新觸發抵達格子效果，目標若持有反制卡或反彈卡，可以在效果結算前回應。'},
+ {id:'birthday',name:'生日派對卡',type:'money',timing:'active',icon:'🎂',summary:'其他玩家各支付一筆錢',description:'所有其他尚未破產的玩家各支付一筆隨物價指數調整的生日派對費用給使用者。',usage:'在自己的回合、擲骰前直接使用，不需要選擇目標。',restriction:'不會向自己收費；每位其他存活玩家各支付基礎金額 $300，實際金額依目前物價指數換算。'},
+ {id:'subsidy',name:'城市補助卡',type:'money',timing:'active',icon:'🪙',summary:'從銀行獲得小額補助',description:'從銀行獲得一筆隨物價指數調整的城市補助金。',usage:'在自己的回合、擲骰前直接使用，不需要選擇目標。',restriction:'基礎補助金額為 $800，實際金額依目前物價指數換算；每回合最多使用一張主動技能卡。'},
+ {id:'counter',name:'反制卡',type:'defense',timing:'reaction',icon:'✋',summary:'取消作用在自己的技能',description:'取消一張尚未結算、正要作用在自己身上的單一目標技能卡。',usage:'其他玩家對自己使用可指定單一玩家的技能卡、且效果尚未結算時，在反應提示中選擇「使用反制卡」。',restriction:'只能在符合反應時機時使用；使用後原技能卡直接進入棄牌堆，不產生效果。'},
+ {id:'reflect',name:'反彈卡',type:'defense',timing:'reaction',icon:'↩',summary:'將單一指定技能反彈',description:'將一張尚未結算、原本作用在自己身上的單一目標技能，改為作用在發動者身上。',usage:'其他玩家對自己使用可指定單一玩家的技能卡、且效果尚未結算時，在反應提示中選擇「使用反彈卡」。',restriction:'只適用於單一玩家目標的技能；每次技能事件最多反彈一次，不能反彈全體效果、金額事件或已完成結算的效果。'},
+ {id:'redraw',name:'幸運重抽卡',type:'utility',timing:'active',icon:'⟳',summary:'放棄一張手牌並重新抽卡',description:'放棄目前的一張手牌，從技能牌堆重新抽取 1 張技能卡，改變手上的策略選擇。',usage:'在自己的回合、擲骰前直接使用，不需要選擇目標。',restriction:'每回合仍受最多使用 1 張主動卡的限制；重新抽卡後仍受每位玩家最多 3 張手牌的限制。',note:'目前版本的重抽結算仍待規則引擎補完，圖鑑先保留完整規則說明。'},
+ {id:'land-swap',name:'換地卡',type:'control',timing:'active',icon:'🏠',summary:'交換兩塊地產所有權',target:'land',description:'將自己擁有的一塊普通地產，與其他存活玩家擁有的一塊普通地產交換所有權。',usage:'在自己的回合、擲骰前選擇自己的土地與對方土地後使用。',restriction:'雙方都必須是普通地產；不能選特殊格、未出售地產或已破產玩家的地產。交換後保留原有房屋／旅館等級，不會觸發抵達效果。'}
 ];
 export const SKILL_CARD_IDS=SKILL_CARDS.map(card=>card.id);
 export const skillCardById=id=>SKILL_CARDS.find(card=>card.id===id)||null;
