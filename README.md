@@ -2,6 +2,8 @@
 
 目前版本：`v1.6.1`
 
+立即遊玩：[GitHub Pages 線上版本](https://topcatclaw2.github.io/Rich3D/)
+
 ## 版本歷史
 
 ### v1.6.1（2026-09-20）
