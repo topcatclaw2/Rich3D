@@ -190,6 +190,10 @@
 @media(max-width:1150px){.player-status-drawer{width:min(540px,58vw);min-width:390px;padding:25px 22px 18px}.status-player-selectors{gap:5px}.status-player-selectors button{font-size:10px}}
 @media(max-width:760px){.player-status-backdrop{background:#233d2d55}.player-status-drawer{width:100%;min-width:0;padding:22px 17px 16px}.status-drawer-heading{margin-bottom:18px}.status-drawer-heading h2{font-size:21px}.status-player-selectors{grid-template-columns:repeat(2,1fr);gap:7px}.status-player-selectors button{padding:7px 9px;font-size:11px}.status-summary{grid-template-columns:auto 1fr 1fr;gap:10px;padding:13px 11px}.status-summary-player{grid-column:2/-1}.status-summary>div:nth-of-type(2){grid-column:2}.status-summary>div:nth-of-type(3){grid-column:3}.status-summary>div>b{font-size:15px}.status-tabs{margin-top:16px}.status-tabs button{font-size:11px}.status-property-grid,.status-card-list{grid-template-columns:1fr}.status-drawer-content{padding-top:10px}.status-section-heading h3{font-size:14px}.player-status-trigger{width:22px}}
 @media(prefers-reduced-motion:reduce){.player-status-backdrop,.player-status-drawer{animation:none}}
+.brand-copy{display:grid;gap:0;min-width:0}.brand-version{display:block;margin-top:1px;color:#899789;font-size:8px;letter-spacing:.65px;line-height:1.35;white-space:nowrap}
+@media(max-width:760px){.brand-version{font-size:7px;letter-spacing:.2px}}
+.version-meta{color:#899789;font-size:8px;letter-spacing:.65px;line-height:1.35;white-space:nowrap}.home-version{font-size:9px}.setup-version{display:block;margin:-10px 0 17px;text-align:right}
+@media(max-width:680px){.home-version{font-size:8px;letter-spacing:.25px}.setup-version{margin:-9px 0 14px;font-size:8px}}
 .skill-redraw-picker{border-color:#c9b879;background:#fffaf0}
 .skill-redraw-help{margin:0;color:#806f43;font-size:9px;line-height:1.5}
 .skill-redraw-options{display:grid;gap:6px}
