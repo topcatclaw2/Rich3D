@@ -17,9 +17,12 @@ const MOODS={
 const PREVIEWS={
  trap:{source:['proud','先請你進監獄休息一下。'],target:['surprised','等等，我被送進監獄了？']},
  slow:{source:['proud','接下來慢慢走吧。'],target:['surprised','我的步伐被限制了！']},
+ stay:{source:['proud','這回合就在原地再來一次。'],target:['surprised','我怎麼又回到同一格了？']},
  teleport:{source:['proud','城市位置，照我的計畫走。'],target:['surprised','我被傳送到哪裡了？']},
  'position-swap':{source:['proud','位置交換，局勢改寫！'],target:['surprised','我的位置被換走了！']},
  'land-swap':{source:['proud','這筆換地交易成立。'],target:['surprised','我的街區突然易主了？！']},
+ demolish:{source:['proud','這棟建築，拆掉一層。'],target:['surprised','我的房屋被拆了！']},
+ 'building-swap':{source:['proud','交換建築等級，重新布局。'],target:['surprised','我的房屋等級被換走了！']},
  birthday:{source:['happy','今天的派對由我做東！'],target:['surprised','怎麼每個人都要付錢？']},
  subsidy:{source:['happy','城市補助到手！'],target:['happy','銀行送來一筆補助。']},
  'rent-shield':{source:['relieved','這次租金，安全下莊。'],target:['surprised','這筆租金被護盾擋下了。']},
