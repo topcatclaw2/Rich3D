@@ -84,7 +84,7 @@ const ACTIVITY_VISIBLE_KEY='city-tycoon:activity-visible:v1';
 const GLASS_OPACITY_KEY='city-tycoon:glass-opacity:v1';
 const EMOTION_ANIMATION_KEY='city-tycoon:emotion-animation:v1';
 const SKILL_ANIMATION_KEY='city-tycoon:skill-animation:v1';
-const APP_VERSION='v1.7.0';
+const APP_VERSION='v1.7.1';
 const APP_RELEASE_DATE='2026-09-21';
 const DEFAULT_GLASS_OPACITY=72;
 const clampGlassOpacity=value=>Math.min(95,Math.max(5,Number(value)));
