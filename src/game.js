@@ -23,8 +23,8 @@ export const SKILL_CARDS=[
  {id:'slow',name:'龜速卡',type:'control',timing:'active',icon:'🐌',summary:'目標 3 回合最多走 1 格',target:'player',description:'使目標玩家接下來 3 個自己的回合，每回合最多前進 1 格，但仍會觸發抵達格子的效果。',usage:'在自己的回合、擲骰前選擇一名玩家使用，也可以指定自己。',restriction:'目標已有龜速效果時不能重複套用；指定其他玩家時，對方可使用反制卡或反彈卡。'},
  {id:'teleport',name:'傳送卡',type:'movement',timing:'active',icon:'✦',summary:'將玩家移到合法位置',target:'player',description:'將一名玩家直接移動到指定的合法棋盤位置，並觸發該位置的抵達效果。',usage:'在自己的回合、擲骰前選擇目標玩家與合法位置後使用。',restriction:'不能選擇「前往監獄」格；傳送不會重複抽取技能卡，目標若持有反制卡或反彈卡，可以在效果結算前回應。'},
  {id:'get-out',name:'出獄卡',type:'utility',timing:'active',icon:'🔓',summary:'解除自己的監獄狀態',description:'立即解除自己的監獄狀態，恢復正常行動。',usage:'自己處於監獄狀態時，在自己的回合、擲骰前使用。',restriction:'只有目前在監獄中的玩家可以使用；不能替其他玩家解除監獄。'},
- {id:'rent-shield',name:'免租卡',type:'defense',timing:'active',icon:'🛡️',summary:'下一次租金免除',description:'讓自己下一次應支付的租金完全免除。',usage:'在自己的回合、擲骰前使用；效果會保留到下一次需要支付租金時。',restriction:'只保護下一筆租金，觸發後立即消耗；不會免除稅金、事件支出或其他付款。'},
- {id:'rent-double',name:'租金加倍卡',type:'money',timing:'active',icon:'×2',summary:'下一次收租提高為 2 倍',description:'讓自己下一次收到的租金提高為原本的 2 倍。',usage:'在自己的回合、擲骰前使用；效果會保留到下一次成功收取租金時。',restriction:'只影響下一筆租金交易，觸發後立即消耗；加倍會在通膨與地產租金計算後套用。'},
+  {id:'rent-shield',name:'免租卡',type:'defense',timing:'active',icon:'🛡️',summary:'下一次租金免除',description:'讓自己下一次應支付的租金完全免除。',usage:'在自己的回合、擲骰前使用；效果會保留到下一次需要支付租金時。',restriction:'只保護下一筆租金，觸發後立即消耗；效果尚未觸發前不能重複使用；不會免除稅金、事件支出或其他付款。'},
+  {id:'rent-double',name:'租金加倍卡',type:'money',timing:'active',icon:'×2',summary:'下一次收租提高為 2 倍',description:'讓自己下一次收到的租金提高為原本的 2 倍。',usage:'在自己的回合、擲骰前使用；效果會保留到下一次成功收取租金時。',restriction:'只影響下一筆租金交易，觸發後立即消耗；效果尚未觸發前不能重複使用；加倍會在通膨與地產租金計算後套用。'},
  {id:'position-swap',name:'位置交換卡',type:'movement',timing:'active',icon:'⇄',summary:'交換兩名玩家位置',target:'player',description:'將自己與指定玩家目前在棋盤上的位置互換。',usage:'在自己的回合、擲骰前選擇一名其他玩家使用。',restriction:'只能指定仍在場的其他玩家；交換位置不會重新觸發抵達格子效果，目標若持有反制卡或反彈卡，可以在效果結算前回應。'},
  {id:'birthday',name:'生日派對卡',type:'money',timing:'active',icon:'🎂',summary:'其他玩家各支付一筆錢',description:'所有其他尚未破產的玩家各支付一筆隨物價指數調整的生日派對費用給使用者。',usage:'在自己的回合、擲骰前直接使用，不需要選擇目標。',restriction:'不會向自己收費；每位其他存活玩家各支付基礎金額 $300，實際金額依目前物價指數換算。'},
  {id:'subsidy',name:'城市補助卡',type:'money',timing:'active',icon:'🪙',summary:'從銀行獲得小額補助',description:'從銀行獲得一筆隨物價指數調整的城市補助金。',usage:'在自己的回合、擲骰前直接使用，不需要選擇目標。',restriction:'基礎補助金額為 $800，實際金額依目前物價指數換算；每回合最多使用一張主動技能卡。'},
@@ -62,6 +62,33 @@ function drawSkillCard(s,pId,source='事件中，'){const player=s.players[pId];
 function discardSkillCard(s,p,cardId){const index=p.skillHand.indexOf(cardId);if(index<0)return false;p.skillHand.splice(index,1);s.skillDiscard.push(cardId);return true;}
 function isLivePlayer(s,id){return Number.isInteger(id)&&id>=0&&id<s.players.length&&!s.players[id].bankrupt;}
 function skillReactionOptions(s,target){return {counter:target.skillHand.includes('counter'),reflect:target.skillHand.includes('reflect')};}
+export function canUseSkillCard(s,a={}){
+ const p=s.players[s.turn];
+ const overflowUse=a.overflowUse===true&&s.skillOverflow?.playerId===s.turn&&s.stage!=='finished';
+ const normalUse=s.stage==='ready'&&!s.skillOverflow;
+ if(!(normalUse||overflowUse)||!p||p.bankrupt||p.skillUsedThisTurn||s.pendingSkill)return false;
+ const card=skillCardById(a.cardId);
+ if(!card||card.timing!=='active'||!SUPPORTED_ACTIVE_SKILLS.has(card.id)||!p.skillHand.includes(card.id))return false;
+ const target=isLivePlayer(s,a.targetId)?s.players[a.targetId]:null;
+ const selfTargetAllowed=card.id==='slow';
+ if(card.target==='player'&&(!target||(target.id===p.id&&!selfTargetAllowed)))return false;
+ if(card.id==='slow'&&target.slowTurns>0)return false;
+ if(card.id==='teleport'&&(!Number.isInteger(a.targetPosition)||!LEGAL_TELEPORT_POSITIONS.includes(a.targetPosition)))return false;
+ if(card.id==='get-out'&&p.jail===0)return false;
+ if(card.id==='rent-double'&&(p.rentMultiplier===2||ownLots(s,p.id).length===0))return false;
+ if(card.id==='rent-shield'&&p.rentShield===1)return false;
+ if(card.id==='birthday'&&!s.players.some(other=>other.id!==p.id&&!other.bankrupt))return false;
+ if(card.id==='redraw'){
+  const otherCards=p.skillHand.filter(id=>id!==card.id);
+  if(otherCards.length>0&&(!a.discardCardId||a.discardCardId===card.id||!otherCards.includes(a.discardCardId)))return false;
+  if(otherCards.length===0&&a.discardCardId)return false;
+ }
+ if(card.id==='land-swap'){
+  const ownLot=s.lots[a.ownLotId],targetLot=s.lots[a.targetLotId];
+  if(!ownLot||!targetLot||ownLot.owner!==p.id||targetLot.owner===p.id||!TILES[a.ownLotId]||!TILES[a.targetLotId]||TILES[a.ownLotId].type!=='property'||TILES[a.targetLotId].type!=='property'||!isLivePlayer(s,targetLot.owner))return false;
+ }
+ return true;
+}
 function applySkillEffect(s,card,source,target,a,{reflected=false}={}){
  if(card.id==='trap'){target.pos=8;target.jail=1;}
  if(card.id==='slow')target.slowTurns=3;
@@ -86,7 +113,7 @@ function resolvePendingSkill(s,response='pass'){
  if(response!=='pass')return false;
  s.pendingSkill=null;applySkillEffect(s,card,source,target,{targetPosition:pending.targetPosition,ownLotId:pending.ownLotId,targetLotId:pending.targetLotId});return true;
 }
- function useSkillCard(s,a){const p=s.players[s.turn];const overflowUse=a.overflowUse===true&&s.skillOverflow?.playerId===s.turn&&s.stage!=='finished';const normalUse=s.stage==='ready'&&!s.skillOverflow;if(!(normalUse||overflowUse)||!p?.human&&!p||p.bankrupt||p.skillUsedThisTurn||s.pendingSkill)return false;const card=skillCardById(a.cardId);if(!card||card.timing!=='active'||!SUPPORTED_ACTIVE_SKILLS.has(card.id)||!p.skillHand.includes(card.id))return false;const target=isLivePlayer(s,a.targetId)?s.players[a.targetId]:null;const selfTargetAllowed=card.id==='slow';if(card.target==='player'&&(!target||(target.id===p.id&&!selfTargetAllowed)))return false;if(card.id==='slow'&&target.slowTurns>0)return false;if(card.id==='get-out'&&p.jail===0)return false;if(card.id==='redraw'){const otherCards=p.skillHand.filter(id=>id!==card.id);if(otherCards.length>0&&(!a.discardCardId||a.discardCardId===card.id||!otherCards.includes(a.discardCardId)))return false;if(otherCards.length===0&&a.discardCardId)return false;}let landTarget=null;if(card.id==='land-swap'){const ownLot=s.lots[a.ownLotId],targetLot=s.lots[a.targetLotId];if(!ownLot||!targetLot||ownLot.owner!==p.id||targetLot.owner===p.id||!TILES[a.ownLotId]||!TILES[a.targetLotId]||TILES[a.ownLotId].type!=='property'||TILES[a.targetLotId].type!=='property'||!isLivePlayer(s,targetLot.owner))return false;landTarget=s.players[targetLot.owner];[ownLot.owner,targetLot.owner]=[targetLot.owner,ownLot.owner];}
+ function useSkillCard(s,a){const p=s.players[s.turn];if(!canUseSkillCard(s,a))return false;const card=skillCardById(a.cardId),target=isLivePlayer(s,a.targetId)?s.players[a.targetId]:null;let landTarget=null;if(card.id==='land-swap'){const ownLot=s.lots[a.ownLotId],targetLot=s.lots[a.targetLotId];landTarget=s.players[targetLot.owner];[ownLot.owner,targetLot.owner]=[targetLot.owner,ownLot.owner];}
  discardSkillCard(s,p,card.id);p.skillUsedThisTurn=true;if(s.skillOverflow?.playerId===p.id&&p.skillHand.length<=MAX_SKILL_HAND)s.skillOverflow=null;
  if(card.target==='player'&&target.id!==p.id){const reactions=skillReactionOptions(s,target);if(reactions.counter||reactions.reflect){s.pendingSkill={sourceId:p.id,targetId:target.id,cardId:card.id,targetPosition:Number.isInteger(a.targetPosition)?a.targetPosition:null,ownLotId:a.ownLotId,targetLotId:a.targetLotId};const summary=`${p.name}使用${card.name}，指定${target.name}，等待回應。`;note(s,summary,'skill');emitEmotion(s,{category:'skillUse',summary,participants:[{playerId:p.id,category:'skillUse'},{playerId:target.id,category:'skillTarget'}]});return true;}}
  applySkillEffect(s,card,p,target||landTarget||p,a);return true;
