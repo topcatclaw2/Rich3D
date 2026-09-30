@@ -8,7 +8,7 @@
 
 ### v1.7.2（2026-09-30）
 
-- 整合 Google Tag Manager（GTM-MLXZV6JM），並提供無 JavaScript 時的 noscript 標記。
+- 整合 Google Tag Manager，並提供無 JavaScript 時的 noscript 標記。
 
 ### v1.7.1（2026-09-21）
 
