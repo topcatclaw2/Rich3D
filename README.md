@@ -1,10 +1,14 @@
 # 城市大亨 · CITY TYCOON
 
-目前版本：`v1.7.1`
+目前版本：`v1.7.2`
 
 立即遊玩：[GitHub Pages 線上版本](https://topcatclaw2.github.io/Rich3D/)
 
 ## 版本歷史
+
+### v1.7.2（2026-09-30）
+
+- 整合 Google Tag Manager（GTM-MLXZV6JM），並提供無 JavaScript 時的 noscript 標記。
 
 ### v1.7.1（2026-09-21）
 
